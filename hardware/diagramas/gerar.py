@@ -1,0 +1,495 @@
+"""Gera os diagramas de hardware do quarto PX (HTML + SVG inline, skin PX).
+
+Uso: python3 hardware/diagramas/gerar.py
+Depois exporte cada .html para .svg com o export_svg.py da skill diagram-design
+(veja hardware/diagramas/README.md).
+"""
+from math import ceil
+from pathlib import Path
+
+OUT = Path(__file__).parent
+
+# Skin PX (perfil ~/.diagram-design/profiles/px.md)
+PAPER = "#f6f7f9"
+WHITE = "#ffffff"
+INK = "#0F3D66"
+MUTED = "#4B5563"
+SOFT = "#5b6578"
+ACCENT = "#1f6fbf"
+LINK = "#117a42"
+FN = "'Nunito', system-ui, sans-serif"
+FM = "'Geist Mono', ui-monospace, monospace"
+FS = "'Instrument Serif', 'Noto Serif', serif"
+
+
+def ink(a):
+    return f"rgba(15,61,102,{a})"
+
+
+def acc(a):
+    return f"rgba(31,111,191,{a})"
+
+
+def mut(a):
+    return f"rgba(75,85,99,{a})"
+
+
+def r4(v):
+    return int(ceil(v / 4.0) * 4)
+
+
+TREAT = {
+    "focal": (acc(0.08), ACCENT, None),
+    "backend": (WHITE, INK, None),
+    "device": (ink(0.05), MUTED, None),
+    "external": (ink(0.03), ink(0.30), None),
+    "input": (mut(0.10), SOFT, None),
+    "optional": (ink(0.02), ink(0.30), "4,3"),
+}
+
+LEGEND_LABEL = {
+    "focal": "FOCO DA INVESTIGAÇÃO",
+    "backend": "SISTEMA PX / CONTROLE",
+    "device": "DISPOSITIVO",
+    "external": "SERVIÇO EXTERNO",
+    "input": "PESSOA / ENTRADA",
+    "optional": "A DEFINIR",
+}
+
+PAGE = """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Nunito:wght@400;600;700&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    :root {{
+      --color-paper:   {paper};
+      --color-ink:     {ink};
+      --color-muted:   {muted};
+      --color-accent:  {accent};
+      --font-sans:     {fn};
+      --font-serif:    {fs};
+      --font-mono:     {fm};
+    }}
+    body {{
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }}
+    .frame {{ max-width: 1200px; width: 100%; }}
+    .diagram-container {{ width: 100%; overflow-x: auto; }}
+    .eyebrow {{
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }}
+    h1 {{
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }}
+    svg {{ width: 100%; min-width: {w}px; display: block; }}
+    @media print {{
+      .diagram-container {{ overflow-x: visible; }}
+      svg {{ min-width: 0; }}
+    }}
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">{eyebrow}</p>
+    <h1>{title}</h1>
+    <div class="diagram-container">
+      <svg viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="{slug}-title {slug}-desc">
+        <title id="{slug}-title">{title}</title>
+        <desc id="{slug}-desc">{desc}</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="{muted}"/></marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="{accent}"/></marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="{link}"/></marker>
+          <marker id="arrow-open" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polyline points="0 0, 8 3, 0 6" fill="none" stroke="{muted}" stroke-width="1.2"/></marker>
+        </defs>
+        <rect width="100%" height="100%" fill="{paper}"/>
+{body}
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
+"""
+
+
+def page(slug, eyebrow, title, desc, w, h, parts):
+    body = "\n".join("        " + p for p in parts)
+    html = PAGE.format(
+        slug=slug, eyebrow=eyebrow, title=title, desc=desc, w=w, h=h, body=body,
+        paper=PAPER, ink=INK, muted=MUTED, accent=ACCENT, link=LINK, fn=FN, fs=FS, fm=FM,
+    )
+    (OUT / f"{slug}.html").write_text(html, encoding="utf-8")
+
+
+# ---------- primitivas ----------
+
+MARK = {MUTED: "arrow", ACCENT: "arrow-accent", LINK: "arrow-link"}
+
+
+def arrow(d, color=MUTED, dashed=False, marker=None):
+    m = marker or MARK[color]
+    dash = ' stroke-dasharray="5,4"' if dashed else ""
+    sw = "1" if dashed else "1.2"
+    return f'<path d="{d}" fill="none" stroke="{color}" stroke-width="{sw}"{dash} marker-end="url(#{m})"/>'
+
+
+def label_w(text):
+    return r4(len(text) * 8 * 0.62 + 12)
+
+
+def label_above(cx, line_y, text):
+    w = label_w(text)
+    return (f'<rect x="{cx - w / 2:g}" y="{line_y - 20}" width="{w}" height="12" rx="2" fill="{PAPER}"/>'
+            f'<text x="{cx:g}" y="{line_y - 11}" fill="{SOFT}" font-size="8" font-family="{FM}" '
+            f'text-anchor="middle" letter-spacing="0.06em">{text}</text>')
+
+
+def label_right(line_x, cy, text):
+    w = label_w(text)
+    x = line_x + 8
+    return (f'<rect x="{x}" y="{cy - 6}" width="{w}" height="12" rx="2" fill="{PAPER}"/>'
+            f'<text x="{x + w / 2:g}" y="{cy + 3}" fill="{SOFT}" font-size="8" font-family="{FM}" '
+            f'text-anchor="middle" letter-spacing="0.06em">{text}</text>')
+
+
+def node(x, y, w, h, kind, tag, name, sub):
+    fill, stroke, dash = TREAT[kind]
+    d = f' stroke-dasharray="{dash}"' if dash else ""
+    cx, cy = x + w / 2, y + h / 2
+    tag_color = ACCENT if kind == "focal" else SOFT
+    tag_stroke = acc(0.40) if kind == "focal" else ink(0.25)
+    tw = r4(len(tag) * 7 * 0.62 + 10)
+    return (
+        f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="6" fill="{PAPER}"/>'
+        f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="6" fill="{fill}" stroke="{stroke}" stroke-width="1"{d}/>'
+        f'<rect x="{x + 8}" y="{y + 6}" width="{tw}" height="12" rx="2" fill="none" stroke="{tag_stroke}" stroke-width="0.8"/>'
+        f'<text x="{x + 8 + tw / 2:g}" y="{y + 15}" fill="{tag_color}" font-size="7" font-family="{FM}" '
+        f'text-anchor="middle" letter-spacing="0.08em">{tag}</text>'
+        f'<text x="{cx:g}" y="{cy + (4 if sub else 10):g}" fill="{INK}" font-size="12" font-weight="600" font-family="{FN}" '
+        f'text-anchor="middle">{name}</text>'
+        f'<text x="{cx:g}" y="{cy + 18:g}" fill="{MUTED}" font-size="9" font-family="{FM}" '
+        f'text-anchor="middle">{sub}</text>'
+    )
+
+
+def zone(x, y, w, h, text):
+    lw = r4(len(text) * 7 * 0.62 + 16)
+    return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8" fill="{ink(0.02)}" stroke="{ink(0.10)}" stroke-width="0.8"/>'
+            f'<rect x="{x + 12}" y="{y + 4}" width="{lw}" height="12" rx="2" fill="{PAPER}"/>'
+            f'<text x="{x + 12 + lw / 2:g}" y="{y + 13}" fill="{SOFT}" font-size="7" font-family="{FM}" '
+            f'text-anchor="middle" letter-spacing="0.14em">{text}</text>')
+
+
+def legend(y, w, kinds, arrows):
+    """kinds: lista de tratamentos de nó; arrows: lista de (cor, tracejado, texto)."""
+    out = [f'<line x1="24" y1="{y - 8}" x2="{w - 24}" y2="{y - 8}" stroke="{ink(0.10)}" stroke-width="0.8"/>',
+           f'<text x="24" y="{y + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" letter-spacing="0.14em">LEGENDA</text>']
+    x = 100
+    for k in kinds:
+        fill, stroke, dash = TREAT[k]
+        d = f' stroke-dasharray="{dash}"' if dash else ""
+        text = LEGEND_LABEL[k]
+        out.append(f'<rect x="{x}" y="{y + 4}" width="16" height="10" rx="2" fill="{fill}" stroke="{stroke}" stroke-width="1"{d}/>')
+        out.append(f'<text x="{x + 22}" y="{y + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" letter-spacing="0.08em">{text}</text>')
+        x += r4(22 + len(text) * 8 * 0.62 + 20)
+    for color, dashed, text, *marker in arrows:
+        dash = ' stroke-dasharray="5,4"' if dashed else ""
+        m = marker[0] if marker else MARK[color]
+        out.append(f'<line x1="{x}" y1="{y + 9}" x2="{x + 24}" y2="{y + 9}" stroke="{color}" stroke-width="1.2"{dash} marker-end="url(#{m})"/>')
+        out.append(f'<text x="{x + 32}" y="{y + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" letter-spacing="0.08em">{text}</text>')
+        x += r4(32 + len(text) * 8 * 0.62 + 20)
+    assert x <= w, f"legenda estoura a largura: {x} > {w}"
+    return out
+
+
+# ---------- 1. visão geral ----------
+
+def visao_geral():
+    W, H = 960, 632
+    A, B, C = 64, 400, 736          # colunas (x da caixa), largura 160
+    NW, NH = 160, 56
+    R1, R2, R3, R4 = 96, 216, 360, 472
+    p = []
+    p.append(zone(376, 64, 544, 112, "NUVEM"))
+    p.append(zone(40, 328, 880, 224, "QUARTO"))
+    # setas antes das caixas
+    p.append(arrow(f"M {A + NW},{R1 + 28} H {B}"))
+    p.append(label_above((A + NW + B) / 2, R1 + 28, "RESERVA"))
+    p.append(arrow(f"M {B + NW},{R1 + 28} H {C}", LINK))
+    p.append(label_above((B + NW + C) / 2, R1 + 28, "CRIA SENHA"))
+    p.append(arrow(f"M 452,{R1 + NH} V {R2 + 20} Q 452,{R2 + 28} 444,{R2 + 28} H {A + NW}"))
+    p.append(label_above(334, R2 + 28, "SENHA + QUARTO"))
+    p.append(arrow(f"M 508,{R1 + NH} V {R3}", dashed=True))
+    p.append(label_right(508, 296, "COMANDO?"))
+    p.append(arrow(f"M {C + 80},{R1 + NH} V {R3}", LINK))
+    p.append(label_right(C + 80, 296, "SINCRONIZA"))
+    p.append(arrow(f"M {B},{R3 + 28} H {A + NW}"))
+    p.append(label_above((A + NW + B) / 2, R3 + 28, "CONTROLE"))
+    p.append(arrow(f"M {B + 80},{R3 + NH} V {R4}"))
+    p.append(label_right(B + 80, (R3 + NH + R4) / 2, "PROTOCOLO"))
+    p.append(arrow(f"M {B + NW},{R4 + 28} H {C}"))
+    p.append(label_above((B + NW + C) / 2, R4 + 28, "127/220 V"))
+    # caixas
+    p.append(node(A, R1, NW, NH, "external", "EXT", "Transportadora", "faz a reserva"))
+    p.append(node(B, R1, NW, NH, "backend", "API", "Backend PX", "reserva → senha"))
+    p.append(node(C, R1, NW, NH, "external", "EXT", "Nuvem da fechadura", "API da marca"))
+    p.append(node(A, R2, NW, NH, "input", "APP", "App do motorista", "senha + info"))
+    p.append(node(A, R3, NW, NH, "device", "DEV", "Ar-condicionado", "inteligente"))
+    p.append(node(B, R3, NW, NH, "focal", "HUB", "Hub de automação", "Alexa ou HA?"))
+    p.append(node(C, R3, NW, NH, "focal", "LOCK", "Fechadura", "senha no teclado"))
+    p.append(node(B, R4, NW, NH, "backend", "IO", "Módulo relé", "entradas + saídas"))
+    p.append(node(C, R4, NW, NH, "device", "DEV", "Lâmpadas", "convencionais"))
+    p += legend(584, W, ["focal", "backend", "external", "input", "device"], [(LINK, False, "API"), (MUTED, True, "A CONFIRMAR")])
+    page("visao-geral", "Arquitetura · Quarto PX", "Quarto PX: visão geral do hardware",
+         "Visão geral do quarto PX: a transportadora reserva no backend PX, que cria a senha na nuvem da fechadura e a envia ao app do motorista; "
+         "no quarto, o hub de automação controla o ar-condicionado e o módulo relé, que liga as lâmpadas.",
+         W, H, p)
+
+
+# ---------- 2. fluxo da senha (sequência) ----------
+
+def fluxo_senha():
+    W, H = 960, 736
+    X = [96, 288, 480, 672, 864]
+    names = [("EXT", "Transportadora", "external"), ("API", "Backend PX", "backend"),
+             ("EXT", "Nuvem da fechadura", "external"), ("LOCK", "Fechadura", "focal"),
+             ("APP", "Motorista (app)", "input")]
+    BW, BH, TOP = 152, 48, 48
+    BOTTOM = 672
+    p = []
+    for x in X:
+        p.append(f'<line x1="{x}" y1="{TOP + BH}" x2="{x}" y2="{BOTTOM}" stroke="{ink(0.20)}" stroke-width="1" stroke-dasharray="3,3"/>')
+    # fragmento opt (desenhado antes das mensagens)
+    fx, fy, fw, fh = 40, 536, 496, 112
+    p.append(f'<rect x="{fx}" y="{fy}" width="{fw}" height="{fh}" rx="4" fill="{ink(0.02)}" stroke="{ink(0.22)}" stroke-width="1"/>')
+    p.append(f'<rect x="{fx}" y="{fy}" width="40" height="16" rx="2" fill="{PAPER}" stroke="{ink(0.22)}" stroke-width="1"/>')
+    p.append(f'<text x="{fx + 20}" y="{fy + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" text-anchor="middle" letter-spacing="0.12em">OPT</text>')
+    p.append(f'<text x="{fx + 52}" y="{fy + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" letter-spacing="0.04em">[reserva cancelada]</text>')
+
+    def msg(a, b, y, text, color=MUTED, dashed=False, marker=None, lx=None):
+        x1, x2 = X[a], X[b]
+        end = x2 - 2 if x2 > x1 else x2 + 2
+        p.append(arrow(f"M {x1},{y} H {end}", color, dashed, marker))
+        p.append(label_above(lx if lx is not None else (x1 + x2) / 2, y, text))
+
+    msg(0, 1, 160, "RESERVA")
+    msg(1, 2, 208, "CRIA SENHA", LINK)
+    msg(2, 1, 248, "SENHA CRIADA", dashed=True)
+    msg(2, 3, 296, "SINCRONIZA", dashed=True, marker="arrow-open")
+    msg(1, 4, 344, "SENHA + QUARTO", ACCENT, lx=576)
+    msg(4, 3, 400, "DIGITA SENHA")
+    msg(3, 4, 440, "DESTRAVA", dashed=True)
+    # auto-mensagem: a senha expira no check-out
+    sx, sy = X[3], 480
+    p.append(f'<path d="M {sx},{sy} H {sx + 24} Q {sx + 32},{sy} {sx + 32},{sy + 8} V {sy + 16} Q {sx + 32},{sy + 24} {sx + 24},{sy + 24} H {sx + 2}" '
+             f'fill="none" stroke="{MUTED}" stroke-width="1.2" marker-end="url(#arrow)"/>')
+    w = label_w("EXPIRA NO FIM")
+    p.append(f'<rect x="{sx + 40}" y="{sy + 6}" width="{w}" height="12" rx="2" fill="{PAPER}"/>'
+             f'<text x="{sx + 40 + w / 2:g}" y="{sy + 15}" fill="{SOFT}" font-size="8" font-family="{FM}" text-anchor="middle" letter-spacing="0.06em">EXPIRA NO FIM</text>')
+    msg(0, 1, 592, "CANCELA")
+    msg(1, 2, 628, "REVOGA SENHA", LINK)
+    # atores por último
+    for x, (tag, name, kind) in zip(X, names):
+        p.append(node(x - BW // 2, TOP, BW, BH, kind, tag, name, ""))
+    p += legend(696, W, ["focal", "backend", "external", "input"],
+                [(LINK, False, "API"), (MUTED, True, "RESPOSTA"), (MUTED, True, "ASSÍNCRONO", "arrow-open")])
+    page("fluxo-senha", "Sequência · Quarto PX", "Quarto PX: da reserva à porta aberta",
+         "Sequência da senha do quarto: a transportadora reserva, o backend PX cria a senha na nuvem da fechadura e a envia ao app; "
+         "o motorista digita a senha, a fechadura destrava, e a senha expira no fim da reserva ou é revogada se a reserva for cancelada.",
+         W, H, p)
+
+
+# ---------- 3. relé e interruptores ----------
+
+def rele_interruptores():
+    W, H = 960, 576
+    A, B, C = 48, 400, 752
+    NW, NH = 160, 56
+    R1, R2, R3 = 96, 264, 408
+    p = []
+    p.append(zone(24, 232, 208, 256, "BAIXA TENSÃO"))
+    p.append(zone(728, 232, 208, 256, "127/220 V"))
+    p.append(arrow(f"M {A + 80},{R3} V {R2 + NH}"))
+    p.append(label_right(A + 80, (R2 + NH + R3) / 2, "12/24 V DC"))
+    p.append(arrow(f"M {A + NW},{R2 + 28} H {B}"))
+    p.append(label_above((A + NW + B) / 2, R2 + 28, "SINAL DIGITAL"))
+    p.append(arrow(f"M {B + 80},{R1 + NH} V {R2}", dashed=True))
+    p.append(label_right(B + 80, (R1 + NH + R2) / 2, "PROTOCOLO"))
+    p.append(arrow(f"M {B + NW},{R2 + 28} H {C}", ACCENT, marker="arrow-accent"))
+    p.append(label_above((B + NW + C) / 2, R2 + 28, "LIGA / DESLIGA"))
+    p.append(arrow(f"M {C},{R3 + 28} H {B + 88} Q {B + 80},{R3 + 28} {B + 80},{R3 + 20} V {R2 + NH}"))
+    p.append(label_above((B + 88 + C) / 2, R3 + 28, "FASE"))
+    p.append(node(B, R1, NW, NH, "optional", "HUB", "Hub de automação", "Alexa ou HA?"))
+    p.append(node(A, R2, NW, NH, "input", "IN", "Interruptores", "pulsador na parede"))
+    p.append(node(B, R2, NW, NH, "focal", "IO", "Módulo relé", "entradas + saídas"))
+    p.append(node(C, R2, NW, NH, "device", "DEV", "Lâmpadas", "circuitos de luz"))
+    p.append(node(A, R3, NW, NH, "device", "PSU", "Fonte", "12/24 V DC?"))
+    p.append(node(C, R3, NW, NH, "external", "AC", "Rede elétrica", "disjuntor"))
+    p += legend(528, W, ["focal", "input", "device", "external", "optional"], [(MUTED, True, "A CONFIRMAR")])
+    page("rele-interruptores", "Arquitetura · Quarto PX", "Quarto PX: módulo relé e interruptores",
+         "O interruptor de baixa tensão envia um sinal digital ao módulo relé central, que também aceita comandos do hub por protocolo "
+         "e chaveia a fase da rede elétrica para as lâmpadas convencionais.",
+         W, H, p)
+
+
+# ---------- 4. planta do quarto (axonométrica, ilustrativa) ----------
+
+def iso(x, y, z, ox, oy):
+    return ox + x - y, oy + (x + y) / 2 - z
+
+
+def planta():
+    W = 1000
+    OX, OY = 440, 88
+    PX, PY = 400, 280                 # placa em unidades de modelo
+    T = 6                             # espessura da placa
+    WH = 22                           # parede cortada na altura da mesa
+
+    def P(x, y, z):
+        sx, sy = iso(x, y, z, OX, OY)
+        return f"{sx:g} {sy:g}"
+
+    def poly(pts):
+        return "M " + " L ".join(pts) + " Z"
+
+    def prism(x0, y0, x1, y1, z, h, focal=False, strong=False):
+        t = z + h
+        sil = poly([P(x0, y1, t), P(x0, y0, t), P(x1, y0, t), P(x1, y0, z), P(x1, y1, z), P(x0, y1, z)])
+        left = poly([P(x0, y1, t), P(x1, y1, t), P(x1, y1, z), P(x0, y1, z)])
+        right = poly([P(x1, y1, t), P(x1, y0, t), P(x1, y0, z), P(x1, y1, z)])
+        top = poly([P(x0, y1, t), P(x0, y0, t), P(x1, y0, t), P(x1, y1, t)])
+        edges = f"M {P(x0, y1, t)} L {P(x1, y1, t)} L {P(x1, y0, t)} M {P(x1, y1, t)} L {P(x1, y1, z)}"
+        sw = "1.2" if strong else "0.8"
+        out = f'<path data-role="silhouette" d="{sil}" fill="{WHITE}"/>'
+        if focal:
+            out += (f'<path d="{top}" fill="{acc(0.10)}"/><path d="{left}" fill="{acc(0.20)}"/>'
+                    f'<path d="{right}" fill="{acc(0.32)}"/>')
+        else:
+            out += f'<path d="{left}" fill="{ink(0.07)}"/><path d="{right}" fill="{ink(0.15)}"/>'
+        out += (f'<path d="{edges}" fill="none" stroke="{ink(0.55)}" stroke-width="0.8"/>'
+                f'<path d="{sil}" fill="none" stroke="{INK}" stroke-width="{sw}" stroke-linejoin="round"/>')
+        return out
+
+    # paredes (x0, y0, x1, y1); porta de entrada = vão em y=274..280 entre x 300 e 348
+    walls = [
+        (0, 0, 400, 6), (0, 6, 6, 280), (394, 6, 400, 280),
+        (6, 274, 300, 280), (348, 274, 394, 280),
+        (274, 6, 280, 60), (274, 96, 280, 126), (280, 120, 394, 126),
+    ]
+    # móveis e dispositivos: (nome, x0, y0, x1, y1, z, h, focal)
+    things = [
+        ("Cama", 24, 24, 144, 184, T, 14, False),
+        ("Criado-mudo", 152, 24, 184, 56, T, 18, False),
+        ("Ar-condicionado", 40, 8, 128, 20, 40, 12, False),
+        ("Quadro + relé", 8, 196, 20, 244, T, 34, False),
+        ("Interruptor cabeceira", 188, 8, 200, 14, 14, 12, False),
+        ("Interruptor entrada", 284, 266, 296, 272, 14, 12, False),
+        ("Fechadura", 340, 272, 348, 278, 14, 12, True),
+        ("Vaso", 352, 24, 380, 52, T, 14, False),
+        ("Pia", 300, 12, 340, 28, T, 24, False),
+    ]
+    boxes = [("parede", *w, T, WH, False) for w in walls] + things
+
+    def screen_bbox(b):
+        _, x0, y0, x1, y1, z, h, _ = b
+        pts = [iso(x, y, zz, OX, OY) for x in (x0, x1) for y in (y0, y1) for zz in (z, z + h)]
+        xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+        return min(xs), min(ys), max(xs), max(ys)
+
+    def overlap(a, b):
+        A_, B_ = screen_bbox(a), screen_bbox(b)
+        return A_[0] < B_[2] and B_[0] < A_[2] and A_[1] < B_[3] and B_[1] < A_[3]
+
+    def behind(a, b):
+        return a[3] <= b[1] or a[4] <= b[2]  # a.x1 <= b.x0 or a.y1 <= b.y0
+
+    order, rest = [], list(boxes)
+    while rest:
+        for cand in rest:
+            if not any(o is not cand and overlap(o, cand) and behind(o, cand) for o in rest):
+                order.append(cand)
+                rest.remove(cand)
+                break
+        else:
+            raise RuntimeError("ordem de pintura sem solução")
+
+    p = [f'<g data-axo-plan data-origin="{OX} {OY}">']
+    plate = prism(0, 0, PX, PY, 0, T, strong=True)
+    p.append(f'<g data-plate data-rect="0 0 {PX} {PY} 0" data-z="0" data-t="{T}">{plate}</g>')
+    # piso do banheiro como marca plana
+    bath = poly([P(280, 126, T), P(280, 6, T), P(394, 6, T), P(394, 126, T)])
+    p.append(f'<g data-room data-name="Banheiro" data-rect="280 6 394 120 0"><path d="{bath}" fill="{ink(0.07)}"/></g>')
+    p.append('<g data-room data-name="Quarto" data-rect="6 6 274 274 0"></g>')
+    for b in order:
+        name, x0, y0, x1, y1, z, h, focal = b
+        kind = "wall" if name == "parede" else "furniture"
+        f = " data-focal" if focal else ""
+        p.append(f'<g data-box data-rect="{x0} {y0} {x1} {y1} 0" data-z="{z}" data-h="{h}" data-kind="{kind}"{f}>'
+                 f'{prism(x0, y0, x1, y1, z, h, focal)}</g>')
+
+    tags = [
+        # (nome, sublabel, ponto de modelo, deslocamento em tela, focal)
+        ("Quarto", "cama de casal", (200, 210, T), (0, 0), False),
+        ("Banheiro", "fora da automação", (340, 90, T), (0, 0), False),
+        ("Ar-condicionado", "inteligente", (84, 14, 52), (0, -22), False),
+        ("Quadro + relé", "hub se for HA", (14, 220, T + 34), (-12, -22), False),
+        ("Interruptor", "cabeceira", (194, 11, 26), (36, -22), False),
+        ("Interruptor", "entrada", (290, 269, 26), (-60, 4), False),
+        ("Fechadura", "senha remota", (344, 275, 26), (64, 44), True),
+    ]
+    placed = []
+    for name, sub, (mx, my, mz), (dx, dy), focal in tags:
+        sx, sy = iso(mx, my, mz, OX, OY)
+        sx, sy = sx + dx, sy + dy
+        w = r4(max(len(name) * 12 * 0.6, len(sub) * 8 * 0.62) + 16)
+        rx, ry = sx - w / 2, sy - 16
+        for (ax, ay, aw) in placed:
+            assert rx + w <= ax or ax + aw <= rx or ry + 32 <= ay or ay + 32 <= ry, f"etiquetas sobrepostas: {name}"
+        placed.append((rx, ry, w))
+        stroke = ACCENT if focal else ink(0.12)
+        color = ACCENT if focal else INK
+        subc = ACCENT if focal else MUTED
+        p.append(f'<g data-role="tag" data-name="{name}" data-at="{mx} {my} {mz}">'
+                 f'<rect x="{rx:g}" y="{ry:g}" width="{w}" height="32" rx="2" fill="{WHITE}" stroke="{stroke}" stroke-width="0.8"/>'
+                 f'<text data-role="name" x="{sx:g}" y="{sy:g}" text-anchor="middle" fill="{color}" font-size="12" font-weight="600" font-family="{FN}">{name}</text>'
+                 f'<text x="{sx:g}" y="{sy + 11:g}" text-anchor="middle" fill="{subc}" font-size="8" font-family="{FM}" letter-spacing="0.08em">{sub}</text></g>')
+    p.append("</g>")
+    ny = 480
+    p.append(f'<text x="160" y="{ny}" fill="{ACCENT}" font-size="8" font-family="{FM}" letter-spacing="0.18em">ILUSTRATIVO</text>')
+    p.append(f'<text x="252" y="{ny}" fill="{MUTED}" font-size="10" font-family="{FS}" font-style="italic">'
+             f'Posições de exemplo. A planta baixa real substitui esta figura. As luzes ficam no teto e não aparecem: as paredes estão cortadas.</text>')
+    page("planta-quarto", "Planta axonométrica · Quarto PX", "Quarto PX: onde fica cada dispositivo",
+         "Planta ilustrativa do quarto PX com cama, banheiro, fechadura na porta de entrada, interruptores na entrada e na cabeceira, "
+         "ar-condicionado na parede e quadro com o módulo relé.",
+         W, 504, p)
+
+
+if __name__ == "__main__":
+    visao_geral()
+    fluxo_senha()
+    rele_interruptores()
+    planta()
+    print("ok:", ", ".join(sorted(f.name for f in OUT.glob("*.html"))))
