@@ -14,15 +14,18 @@
 
 O fluxo completo está no [README principal](../README.md#fluxo-de-uso-proposta).
 
-> **Atenção:** os diagramas SVG ainda mostram a Alexa, o ar-condicionado e o banheiro dentro do quarto. Atualize `diagramas/gerar.py`.
-
 ![Visão geral do hardware do quarto PX](diagramas/visao-geral.svg)
 
 ## O quarto
 
+Cada quarto mede cerca de 2 m × 2,5 m. A janela fica numa parede de 2 m, e a porta fica na parede oposta de 2 m. A [maquete](#maquete-do-quarto) mostra a disposição.
+
 | Item | Quantidade por quarto |
 |---|---|
-| Cama | 1 |
+| Cama de solteiro | 1 |
+| Ar-condicionado (sobre a janela) | 1 |
+| Janela | 1 |
+| Porta com fechadura | 1 |
 | Cômoda ou escrivaninha pequena | 1 |
 | Ponto de luz | 1 |
 | Interruptor | 1 |
@@ -37,9 +40,10 @@ Escala inicial: cerca de 20 quartos.
 | Fechadura do quarto | Senha com início e fim, criada pela Torre via API Intelbras | 🟡 investigando | [fechadura.md](fechadura.md) |
 | Hub de automação | Hub Intelbras MCA + API de integração Intelbras (em avaliação) | 🟡 investigando | [hub-automacao.md](hub-automacao.md) |
 | Luz + interruptor | 1 ponto de luz e 1 interruptor; acende quando a porta abre | 🟡 investigando | [rele-e-interruptores.md](rele-e-interruptores.md) |
+| Processamento central | Mini PC central em vez de um hub de processamento por quarto (hipótese) | 🟡 hipótese | [hub-automacao.md](hub-automacao.md#processamento-central-hipótese) |
 | Assistente de voz | Alto-falante e microfone; boas-vindas e informações | 🟡 investigando | [assistente.md](assistente.md) |
 | Banheiro comunitário | Controle de acesso, banho grátis e banho pago | ⚪ fluxo a definir | [banheiro.md](banheiro.md) |
-| Planta baixa | Posição dos quartos, do quadro e do banheiro | ⚪ aguardando | [planta](#planta-ilustrativa) |
+| Planta baixa | Posição dos quartos, do quadro e do banheiro | ⚪ aguardando | [maquete](#maquete-do-quarto) |
 
 Legenda: 🟢 decidido · 🟡 investigando · ⚪ aguardando entrada externa
 
@@ -51,6 +55,7 @@ Estas decisões orientam a investigação. Cada uma vira ADR em [`../ADRs/`](../
 - **Fechadura inteligente é obrigatória.** A senha é criada remotamente, sem ninguém no local.
 - **Quarto só com dormitório.** O banheiro é comunitário e fica fora do quarto.
 - **Alexa descartada.** A Alexa não é mais uma opção de hub para comandos de voz.
+- **Processamento central (hipótese).** Com cerca de 20 quartos, um hub de processamento por quarto custa caro demais. Um mini PC central, mais robusto, serve melhor. Cada quarto fica só com os dispositivos finais. Veja [hub-automacao.md](hub-automacao.md#processamento-central-hipótese).
 
 > **Conflito a resolver:** o hub MCA usa Zigbee. A abordagem anterior usa um módulo relé com fio. Veja [hub-automacao.md](hub-automacao.md#conflito-com-as-decisões-atuais).
 
@@ -66,12 +71,14 @@ As perguntas que mais mudam o projeto aparecem primeiro.
 6. Como a senha funciona quando o motorista chega antes ou depois do horário previsto? → [../docs/reserva.md](../docs/reserva.md)
 7. O interruptor continua funcionando sem internet e sem hub? → [rele-e-interruptores.md](rele-e-interruptores.md)
 8. Qual internet o quarto tem, e o que acontece quando ela cai?
+9. Onde fica o mini PC central, e o que acontece com os 20 quartos quando ele falha? → [hub-automacao.md](hub-automacao.md#processamento-central-hipótese)
+10. O ar-condicionado tem controle remoto pelo hub, ou o motorista usa só o controle do aparelho?
 
-## Planta ilustrativa
+## Maquete do quarto
 
-Esta figura é só um exemplo e está desatualizada. A planta baixa real substitui esta figura quando chegar.
+A maquete mostra um quarto de 2 m × 2,5 m: cama de solteiro, janela com o ar-condicionado em cima, porta com fechadura na parede oposta, cômoda com o assistente de voz e interruptor ao lado da porta. As medidas são aproximadas. A planta baixa do conjunto (posição dos quartos, do quadro e do banheiro) ainda não chegou.
 
-![Planta ilustrativa do quarto PX](diagramas/planta-quarto.svg)
+![Maquete do quarto PX](diagramas/planta-quarto.svg)
 
 ## Como manter este documento
 

@@ -8,7 +8,13 @@ O quarto tem só o dormitório. O banheiro fica fora do quarto e é comunitário
 
 Escala inicial: cerca de 20 quartos.
 
-> **Atenção:** os diagramas SVG ainda mostram a versão anterior da arquitetura. Eles serão atualizados em `hardware/diagramas/gerar.py`.
+## O quarto
+
+Cada quarto mede cerca de 2 m × 2,5 m e tem uma cama de solteiro e um ar-condicionado. A janela fica numa parede de 2 m, com o ar-condicionado sobre a janela. A porta, com a fechadura, fica na parede oposta de 2 m.
+
+![Maquete do quarto PX: 2 × 2,5 m, cama de solteiro, janela com ar-condicionado e porta com fechadura](hardware/diagramas/planta-quarto.svg)
+
+## Arquitetura
 
 ![Visão geral do hardware do quarto PX](hardware/diagramas/visao-geral.svg)
 
@@ -65,10 +71,12 @@ O hardware define o resto do projeto. A investigação está no painel [`hardwar
 | Peça | Situação |
 |---|---|
 | Hub de automação | Em avaliação: hub Intelbras MCA, controlado pela API de integração da Intelbras. A Alexa não é mais uma opção. |
+| Processamento | Hipótese: um mini PC central em vez de um hub de processamento por quarto. Veja [`hardware/hub-automacao.md`](hardware/hub-automacao.md#processamento-central-hipótese). |
 | Fechadura do quarto | Obrigatória. A Torre provisiona a senha pela API Intelbras, para a data e o horário da reserva. |
 | Assistente de voz | Desenvolvimento interno, provavelmente. Dá as boas-vindas e informa o motorista. |
 | Banheiro comunitário | Fora do quarto, com controle de acesso. Um banho grátis e banhos extras pagos. Fluxo a definir. |
 | Luz | 1 ponto de luz e 1 interruptor por quarto. A luz acende quando o motorista entra. |
+| Ar-condicionado | 1 por quarto, sobre a janela. Controle pelo hub: a definir. |
 | Reserva | O sistema PX pré-reserva o quarto a partir do contrato do motorista. Proposta complementar: plataforma interna com login pelo Keycloak. Veja [`docs/reserva.md`](docs/reserva.md). |
 
 ## Futuro

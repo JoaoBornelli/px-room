@@ -26,9 +26,9 @@ Fontes: [MCA 1002](https://backend.intelbras.com/pt-br/hub-de-automacao-intelige
 |---|---|---|
 | Comando de voz em pt-BR | a confirmar: sem a Alexa, falta a fonte de voz | Precisa de integração (voz local ou outra) |
 | Controla o módulo relé com fio | a confirmar: aceita só dispositivos Zigbee compatíveis? | Sim, por MQTT, Modbus ou ESPHome |
-| Backend PX envia comando ao quarto | a confirmar: depende da API de integração | Sim, por API própria |
+| Torre PX envia comando ao quarto | a confirmar: depende da API de integração | Sim, por API própria |
 | Funciona sem internet | Dispositivos Zigbee: sim, segundo o fabricante. Cenários: a confirmar | Sim, para o controle local |
-| Gestão de vários quartos e unidades | a confirmar: uma conta para todos os hubs? | Exige gestão de vários Raspberry |
+| Gestão de vários quartos e unidades | a confirmar: uma conta para todos os hubs? | Um Raspberry por quarto exige gestão de vários equipamentos. Um mini PC central evita isso → [processamento central](#processamento-central-hipótese) |
 | Dependência de fabricante | Alta: dispositivos da linha Intelbras | Baixa |
 | Custo por quarto | Hub: cerca de R$ 224 (preço de tabela, 2026-10) | a confirmar |
 
@@ -63,6 +63,26 @@ Cada quarto precisa de, no mínimo, 2 dispositivos no hub: a fechadura e o contr
 | Limite por hub MCA | 32 |
 
 Resultado: 1 hub não é suficiente. São necessários, no mínimo, 2 hubs. O alcance do Zigbee entre os quartos também precisa de teste no local.
+
+## Processamento central (hipótese)
+
+Com cerca de 20 quartos, um hub de processamento por quarto fica inviável, principalmente pelo custo. Um processamento central mais robusto, como um mini PC, passa a valer mais a pena. Cada quarto fica só com os dispositivos finais: fechadura, controle da luz, alto-falante e microfone.
+
+Esta é uma hipótese de 2026-10-22. Ela ainda não virou ADR.
+
+O que o mini PC central pode executar (a confirmar):
+
+- A integração com o hub MCA e com a API Intelbras, se a API for local.
+- O processamento de voz do assistente → [assistente.md](assistente.md).
+- A lógica do evento "porta aberta", da luz e do banho.
+
+Perguntas:
+
+1. Qual mini PC e qual custo, comparado com 20 hubs ou 20 Raspberry?
+2. O mini PC é ponto único de falha. O que cada quarto faz quando o mini PC cai? A luz e a fechadura continuam locais?
+3. Onde o mini PC fica instalado, e qual rede liga os 20 quartos a ele?
+4. O mini PC substitui a Torre para o evento "porta aberta", ou só complementa a Torre?
+5. O mini PC precisa de redundância (um segundo equipamento de reserva)?
 
 ## Evento "porta aberta"
 

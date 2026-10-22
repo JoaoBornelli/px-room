@@ -12,7 +12,7 @@ O assistente fala com o motorista dentro do quarto. O desenvolvimento é interno
 
 ## Perguntas
 
-1. Qual hardware fica em cada quarto: alto-falante e microfone ligados a um computador pequeno, ou outro dispositivo?
+1. Qual hardware fica em cada quarto: só alto-falante e microfone, com o processamento no mini PC central, ou um computador pequeno por quarto? Um computador por quarto fica caro para 20 quartos → [hub-automacao.md](hub-automacao.md#processamento-central-hipótese).
 2. O assistente só fala, ou também recebe comandos de voz? Se recebe, precisa de palavra de ativação (wake word) em pt-BR.
 3. O processamento da voz é local ou na nuvem?
 4. Qual evento inicia as boas-vindas: o evento "porta aberta" da fechadura ou um sensor de presença?
