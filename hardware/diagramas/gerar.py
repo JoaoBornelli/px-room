@@ -237,7 +237,7 @@ def visao_geral():
     p.append(zone(40, 328, 880, 224, "QUARTO"))
     # setas antes das caixas
     p.append(arrow(f"M {A + NW},{R1 + 28} H {B}"))
-    p.append(label_above((A + NW + B) / 2, R1 + 28, "RESERVA"))
+    p.append(label_above((A + NW + B) / 2, R1 + 28, "TROCA PREVISTA"))
     p.append(arrow(f"M {B + NW},{R1 + 28} H {C}", LINK))
     p.append(label_above((B + NW + C) / 2, R1 + 28, "CRIA SENHA"))
     p.append(arrow(f"M 452,{R1 + NH} V {R2 + 20} Q 452,{R2 + 28} 444,{R2 + 28} H {A + NW}"))
@@ -246,26 +246,26 @@ def visao_geral():
     p.append(label_right(508, 296, "COMANDO?"))
     p.append(arrow(f"M {C + 80},{R1 + NH} V {R3}", LINK))
     p.append(label_right(C + 80, 296, "SINCRONIZA"))
-    p.append(arrow(f"M {B},{R3 + 28} H {A + NW}"))
-    p.append(label_above((A + NW + B) / 2, R3 + 28, "CONTROLE"))
+    p.append(arrow(f"M {B},{R3 + 28} H {A + NW}", dashed=True))
+    p.append(label_above((A + NW + B) / 2, R3 + 28, "EVENTO?"))
     p.append(arrow(f"M {B + 80},{R3 + NH} V {R4}"))
     p.append(label_right(B + 80, (R3 + NH + R4) / 2, "PROTOCOLO"))
     p.append(arrow(f"M {B + NW},{R4 + 28} H {C}"))
     p.append(label_above((B + NW + C) / 2, R4 + 28, "127/220 V"))
     # caixas
-    p.append(node(A, R1, NW, NH, "external", "EXT", "Transportadora", "faz a reserva"))
-    p.append(node(B, R1, NW, NH, "backend", "API", "Backend PX", "reserva → senha"))
-    p.append(node(C, R1, NW, NH, "external", "EXT", "Nuvem da fechadura", "API da marca"))
+    p.append(node(A, R1, NW, NH, "external", "EXT", "Contrato e rota", "define a troca"))
+    p.append(node(B, R1, NW, NH, "backend", "API", "Torre PX", "pré-reserva → senha"))
+    p.append(node(C, R1, NW, NH, "external", "EXT", "API Intelbras", "senha temporária"))
     p.append(node(A, R2, NW, NH, "input", "APP", "App do motorista", "senha + info"))
-    p.append(node(A, R3, NW, NH, "device", "DEV", "Ar-condicionado", "inteligente"))
-    p.append(node(B, R3, NW, NH, "focal", "HUB", "Hub de automação", "Alexa ou HA?"))
+    p.append(node(A, R3, NW, NH, "device", "DEV", "Assistente de voz", "boas-vindas"))
+    p.append(node(B, R3, NW, NH, "focal", "HUB", "Hub de automação", "MCA, em avaliação"))
     p.append(node(C, R3, NW, NH, "focal", "LOCK", "Fechadura", "senha no teclado"))
     p.append(node(B, R4, NW, NH, "backend", "IO", "Módulo relé", "entradas + saídas"))
     p.append(node(C, R4, NW, NH, "device", "DEV", "Lâmpadas", "convencionais"))
     p += legend(584, W, ["focal", "backend", "external", "input", "device"], [(LINK, False, "API"), (MUTED, True, "A CONFIRMAR")])
     page("visao-geral", "Arquitetura · Quarto PX", "Quarto PX: visão geral do hardware",
-         "Visão geral do quarto PX: a transportadora reserva no backend PX, que cria a senha na nuvem da fechadura e a envia ao app do motorista; "
-         "no quarto, o hub de automação controla o ar-condicionado e o módulo relé, que liga as lâmpadas.",
+         "Visão geral do quarto PX: a Torre PX pré-reserva o quarto a partir do contrato, cria a senha pela API Intelbras e a envia ao app do motorista; "
+         "no quarto, o hub de automação aciona o assistente de voz e o módulo relé, que liga as lâmpadas.",
          W, H, p)
 
 
@@ -274,8 +274,8 @@ def visao_geral():
 def fluxo_senha():
     W, H = 960, 736
     X = [96, 288, 480, 672, 864]
-    names = [("EXT", "Transportadora", "external"), ("API", "Backend PX", "backend"),
-             ("EXT", "Nuvem da fechadura", "external"), ("LOCK", "Fechadura", "focal"),
+    names = [("EXT", "Contrato e rota", "external"), ("API", "Torre PX", "backend"),
+             ("EXT", "API Intelbras", "external"), ("LOCK", "Fechadura", "focal"),
              ("APP", "Motorista (app)", "input")]
     BW, BH, TOP = 152, 48, 48
     BOTTOM = 672
@@ -287,7 +287,7 @@ def fluxo_senha():
     p.append(f'<rect x="{fx}" y="{fy}" width="{fw}" height="{fh}" rx="4" fill="{ink(0.02)}" stroke="{ink(0.22)}" stroke-width="1"/>')
     p.append(f'<rect x="{fx}" y="{fy}" width="40" height="16" rx="2" fill="{PAPER}" stroke="{ink(0.22)}" stroke-width="1"/>')
     p.append(f'<text x="{fx + 20}" y="{fy + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" text-anchor="middle" letter-spacing="0.12em">OPT</text>')
-    p.append(f'<text x="{fx + 52}" y="{fy + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" letter-spacing="0.04em">[reserva cancelada]</text>')
+    p.append(f'<text x="{fx + 52}" y="{fy + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" letter-spacing="0.04em">[troca cancelada]</text>')
 
     def msg(a, b, y, text, color=MUTED, dashed=False, marker=None, lx=None):
         x1, x2 = X[a], X[b]
@@ -295,7 +295,7 @@ def fluxo_senha():
         p.append(arrow(f"M {x1},{y} H {end}", color, dashed, marker))
         p.append(label_above(lx if lx is not None else (x1 + x2) / 2, y, text))
 
-    msg(0, 1, 160, "RESERVA")
+    msg(0, 1, 160, "TROCA PREVISTA")
     msg(1, 2, 208, "CRIA SENHA", LINK)
     msg(2, 1, 248, "SENHA CRIADA", dashed=True)
     msg(2, 3, 296, "SINCRONIZA", dashed=True, marker="arrow-open")
@@ -309,7 +309,7 @@ def fluxo_senha():
     w = label_w("EXPIRA NO FIM")
     p.append(f'<rect x="{sx + 40}" y="{sy + 6}" width="{w}" height="12" rx="2" fill="{PAPER}"/>'
              f'<text x="{sx + 40 + w / 2:g}" y="{sy + 15}" fill="{SOFT}" font-size="8" font-family="{FM}" text-anchor="middle" letter-spacing="0.06em">EXPIRA NO FIM</text>')
-    msg(0, 1, 592, "CANCELA")
+    msg(0, 1, 592, "CANCELA TROCA")
     msg(1, 2, 628, "REVOGA SENHA", LINK)
     # atores por último
     for x, (tag, name, kind) in zip(X, names):
@@ -317,8 +317,8 @@ def fluxo_senha():
     p += legend(696, W, ["focal", "backend", "external", "input"],
                 [(LINK, False, "API"), (MUTED, True, "RESPOSTA"), (MUTED, True, "ASSÍNCRONO", "arrow-open")])
     page("fluxo-senha", "Sequência · Quarto PX", "Quarto PX: da reserva à porta aberta",
-         "Sequência da senha do quarto: a transportadora reserva, o backend PX cria a senha na nuvem da fechadura e a envia ao app; "
-         "o motorista digita a senha, a fechadura destrava, e a senha expira no fim da reserva ou é revogada se a reserva for cancelada.",
+         "Sequência da senha do quarto: o contrato prevê a troca, a Torre PX pré-reserva o quarto, cria a senha pela API Intelbras e a envia ao app; "
+         "o motorista digita a senha, a fechadura destrava, e a senha expira no fim da reserva ou é revogada se a troca for cancelada.",
          W, H, p)
 
 
@@ -342,7 +342,7 @@ def rele_interruptores():
     p.append(label_above((B + NW + C) / 2, R2 + 28, "LIGA / DESLIGA"))
     p.append(arrow(f"M {C},{R3 + 28} H {B + 88} Q {B + 80},{R3 + 28} {B + 80},{R3 + 20} V {R2 + NH}"))
     p.append(label_above((B + 88 + C) / 2, R3 + 28, "FASE"))
-    p.append(node(B, R1, NW, NH, "optional", "HUB", "Hub de automação", "Alexa ou HA?"))
+    p.append(node(B, R1, NW, NH, "optional", "HUB", "Hub de automação", "MCA ou HA?"))
     p.append(node(A, R2, NW, NH, "input", "IN", "Interruptores", "pulsador na parede"))
     p.append(node(B, R2, NW, NH, "focal", "IO", "Módulo relé", "entradas + saídas"))
     p.append(node(C, R2, NW, NH, "device", "DEV", "Lâmpadas", "circuitos de luz"))
@@ -355,16 +355,17 @@ def rele_interruptores():
          W, H, p)
 
 
-# ---------- 4. planta do quarto (axonométrica, ilustrativa) ----------
+# ---------- 4. maquete do quarto (axonométrica) ----------
 
 def iso(x, y, z, ox, oy):
     return ox + x - y, oy + (x + y) / 2 - z
 
 
 def planta():
+    """Quarto PX: 2 m x 2,5 m. Escala: 150 unidades de modelo por metro."""
     W = 1000
-    OX, OY = 440, 88
-    PX, PY = 400, 280                 # placa em unidades de modelo
+    OX, OY = 480, 100
+    PX, PY = 312, 387                 # placa: interior 300 x 375 (2 m x 2,5 m) + paredes de 6
     T = 6                             # espessura da placa
     WH = 22                           # parede cortada na altura da mesa
 
@@ -375,7 +376,7 @@ def planta():
     def poly(pts):
         return "M " + " L ".join(pts) + " Z"
 
-    def prism(x0, y0, x1, y1, z, h, focal=False, strong=False):
+    def prism(x0, y0, x1, y1, z, h, focal=False, strong=False, glass=False):
         t = z + h
         sil = poly([P(x0, y1, t), P(x0, y0, t), P(x1, y0, t), P(x1, y0, z), P(x1, y1, z), P(x0, y1, z)])
         left = poly([P(x0, y1, t), P(x1, y1, t), P(x1, y1, z), P(x0, y1, z)])
@@ -387,29 +388,30 @@ def planta():
         if focal:
             out += (f'<path d="{top}" fill="{acc(0.10)}"/><path d="{left}" fill="{acc(0.20)}"/>'
                     f'<path d="{right}" fill="{acc(0.32)}"/>')
+        elif glass:
+            out += f'<path d="{left}" fill="{ink(0.03)}"/><path d="{right}" fill="{ink(0.06)}"/>'
         else:
             out += f'<path d="{left}" fill="{ink(0.07)}"/><path d="{right}" fill="{ink(0.15)}"/>'
         out += (f'<path d="{edges}" fill="none" stroke="{ink(0.55)}" stroke-width="0.8"/>'
                 f'<path d="{sil}" fill="none" stroke="{INK}" stroke-width="{sw}" stroke-linejoin="round"/>')
         return out
 
-    # paredes (x0, y0, x1, y1); porta de entrada = vão em y=274..280 entre x 300 e 348
+    # paredes (x0, y0, x1, y1). Parede dos fundos (y=0): janela. Parede da frente (y=381..387): porta, vão de x=180 a x=300.
     walls = [
-        (0, 0, 400, 6), (0, 6, 6, 280), (394, 6, 400, 280),
-        (6, 274, 300, 280), (348, 274, 394, 280),
-        (274, 6, 280, 60), (274, 96, 280, 126), (280, 120, 394, 126),
+        (0, 0, 312, 6), (0, 6, 6, 387), (306, 6, 312, 387),
+        (6, 381, 180, 387), (300, 381, 306, 387),
     ]
     # móveis e dispositivos: (nome, x0, y0, x1, y1, z, h, focal)
     things = [
-        ("Cama", 24, 24, 144, 184, T, 14, False),
-        ("Criado-mudo", 152, 24, 184, 56, T, 18, False),
-        ("Ar-condicionado", 40, 8, 128, 20, 40, 12, False),
-        ("Quadro + relé", 8, 196, 20, 244, T, 34, False),
-        ("Interruptor cabeceira", 188, 8, 200, 14, 14, 12, False),
-        ("Interruptor entrada", 284, 266, 296, 272, 14, 12, False),
-        ("Fechadura", 340, 272, 348, 278, 14, 12, True),
-        ("Vaso", 352, 24, 380, 52, T, 14, False),
-        ("Pia", 300, 12, 340, 28, T, 24, False),
+        ("Cama", 12, 12, 140, 297, T, 8, False),
+        ("Colchão", 14, 14, 138, 295, T + 8, 10, False),
+        ("Travesseiro", 20, 18, 132, 58, T + 18, 6, False),
+        ("Cômoda", 246, 150, 306, 270, T, 30, False),
+        ("Assistente", 266, 190, 284, 208, T + 30, 10, False),
+        ("janela", 144, 1, 270, 5, T + WH, 46, False),
+        ("Ar-condicionado", 144, 6, 270, 24, T + WH + 48, 18, False),
+        ("Interruptor", 300, 381, 306, 387, T + WH, 12, False),
+        ("Fechadura", 168, 381, 180, 387, T + WH, 14, True),
     ]
     boxes = [("parede", *w, T, WH, False) for w in walls] + things
 
@@ -439,26 +441,39 @@ def planta():
     p = [f'<g data-axo-plan data-origin="{OX} {OY}">']
     plate = prism(0, 0, PX, PY, 0, T, strong=True)
     p.append(f'<g data-plate data-rect="0 0 {PX} {PY} 0" data-z="0" data-t="{T}">{plate}</g>')
-    # piso do banheiro como marca plana
-    bath = poly([P(280, 126, T), P(280, 6, T), P(394, 6, T), P(394, 126, T)])
-    p.append(f'<g data-room data-name="Banheiro" data-rect="280 6 394 120 0"><path d="{bath}" fill="{ink(0.07)}"/></g>')
-    p.append('<g data-room data-name="Quarto" data-rect="6 6 274 274 0"></g>')
+    p.append(f'<g data-room data-name="Quarto" data-rect="6 6 306 381 0"></g>')
     for b in order:
         name, x0, y0, x1, y1, z, h, focal = b
         kind = "wall" if name == "parede" else "furniture"
         f = " data-focal" if focal else ""
         p.append(f'<g data-box data-rect="{x0} {y0} {x1} {y1} 0" data-z="{z}" data-h="{h}" data-kind="{kind}"{f}>'
-                 f'{prism(x0, y0, x1, y1, z, h, focal)}</g>')
+                 f'{prism(x0, y0, x1, y1, z, h, focal, glass=(name == "janela"))}</g>')
+
+    # cotas: 2 m na frente, 2,5 m na lateral direita
+    def dim(a, b, tk, label):
+        A, B = iso(*a, 0, OX, OY), iso(*b, 0, OX, OY)
+        out = f'<path d="M {A[0]:g} {A[1]:g} L {B[0]:g} {B[1]:g}" fill="none" stroke="{MUTED}" stroke-width="0.8"/>'
+        for q in (a, b):
+            t0 = iso(q[0] - tk[0], q[1] - tk[1], 0, OX, OY)
+            t1 = iso(q[0] + tk[0], q[1] + tk[1], 0, OX, OY)
+            out += f'<path d="M {t0[0]:g} {t0[1]:g} L {t1[0]:g} {t1[1]:g}" fill="none" stroke="{MUTED}" stroke-width="0.8"/>'
+        mx, my = (A[0] + B[0]) / 2, (A[1] + B[1]) / 2
+        w = r4(len(label) * 9 * 0.62 + 12)
+        out += (f'<rect x="{mx - w / 2:g}" y="{my - 8:g}" width="{w}" height="16" rx="2" fill="{PAPER}"/>'
+                f'<text x="{mx:g}" y="{my + 4:g}" fill="{SOFT}" font-size="9" font-family="{FM}" text-anchor="middle" letter-spacing="0.06em">{label}</text>')
+        return out
+
+    p.append(dim((0, PY + 22), (PX, PY + 22), (0, 6), "2 m"))
+    p.append(dim((PX + 22, 0), (PX + 22, PY), (6, 0), "2,5 m"))
 
     tags = [
         # (nome, sublabel, ponto de modelo, deslocamento em tela, focal)
-        ("Quarto", "cama de casal", (200, 210, T), (0, 0), False),
-        ("Banheiro", "fora da automação", (340, 90, T), (0, 0), False),
-        ("Ar-condicionado", "inteligente", (84, 14, 52), (0, -22), False),
-        ("Quadro + relé", "hub se for HA", (14, 220, T + 34), (-12, -22), False),
-        ("Interruptor", "cabeceira", (194, 11, 26), (36, -22), False),
-        ("Interruptor", "entrada", (290, 269, 26), (-60, 4), False),
-        ("Fechadura", "senha remota", (344, 275, 26), (64, 44), True),
+        ("Cama", "solteiro", (76, 170, T + 18), (0, 0), False),
+        ("Ar-condicionado", "sobre a janela", (207, 15, T + WH + 66), (-30, -22), False),
+        ("Janela", "parede de 2 m", (270, 3, T + WH + 24), (70, 0), False),
+        ("Porta", "fechadura com senha", (200, 340, T), (0, 0), True),
+        ("Interruptor", "ao lado da porta", (303, 384, T + WH + 12), (70, 24), False),
+        ("Assistente", "sobre a cômoda", (275, 199, T + 40), (90, -10), False),
     ]
     placed = []
     for name, sub, (mx, my, mz), (dx, dy), focal in tags:
@@ -466,6 +481,7 @@ def planta():
         sx, sy = sx + dx, sy + dy
         w = r4(max(len(name) * 12 * 0.6, len(sub) * 8 * 0.62) + 16)
         rx, ry = sx - w / 2, sy - 16
+        assert rx >= 8 and rx + w <= W - 8, f"etiqueta fora do quadro: {name}"
         for (ax, ay, aw) in placed:
             assert rx + w <= ax or ax + aw <= rx or ry + 32 <= ay or ay + 32 <= ry, f"etiquetas sobrepostas: {name}"
         placed.append((rx, ry, w))
@@ -477,14 +493,14 @@ def planta():
                  f'<text data-role="name" x="{sx:g}" y="{sy:g}" text-anchor="middle" fill="{color}" font-size="12" font-weight="600" font-family="{FN}">{name}</text>'
                  f'<text x="{sx:g}" y="{sy + 11:g}" text-anchor="middle" fill="{subc}" font-size="8" font-family="{FM}" letter-spacing="0.08em">{sub}</text></g>')
     p.append("</g>")
-    ny = 480
-    p.append(f'<text x="160" y="{ny}" fill="{ACCENT}" font-size="8" font-family="{FM}" letter-spacing="0.18em">ILUSTRATIVO</text>')
-    p.append(f'<text x="252" y="{ny}" fill="{MUTED}" font-size="10" font-family="{FS}" font-style="italic">'
-             f'Posições de exemplo. A planta baixa real substitui esta figura. As luzes ficam no teto e não aparecem: as paredes estão cortadas.</text>')
-    page("planta-quarto", "Planta axonométrica · Quarto PX", "Quarto PX: onde fica cada dispositivo",
-         "Planta ilustrativa do quarto PX com cama, banheiro, fechadura na porta de entrada, interruptores na entrada e na cabeceira, "
-         "ar-condicionado na parede e quadro com o módulo relé.",
-         W, 504, p)
+    ny = 500
+    p.append(f'<text x="96" y="{ny}" fill="{ACCENT}" font-size="8" font-family="{FM}" letter-spacing="0.18em">MAQUETE</text>')
+    p.append(f'<text x="168" y="{ny}" fill="{MUTED}" font-size="10" font-family="{FS}" font-style="italic">'
+             f'Medidas aproximadas. A luz fica no teto e não aparece: as paredes estão cortadas na altura da mesa.</text>')
+    page("planta-quarto", "Maquete axonométrica · Quarto PX", "Quarto PX: 2 × 2,5 m",
+         "Maquete do quarto PX com 2 por 2,5 metros: cama de solteiro, janela com ar-condicionado em cima na parede dos fundos, "
+         "porta com fechadura na parede oposta, cômoda com o assistente de voz e interruptor ao lado da porta.",
+         W, 524, p)
 
 
 if __name__ == "__main__":
