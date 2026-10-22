@@ -2,7 +2,7 @@
 
 > Estado: 🟡 investigando · [← painel do hardware](README.md)
 
-A fechadura inteligente é obrigatória. A transportadora faz a reserva, e o motorista recebe a senha no app. Ninguém da PX vai ao local para cadastrar a senha.
+A fechadura inteligente é obrigatória. O sistema PX pré-reserva o quarto a partir do contrato, e o motorista recebe a senha no app. Ninguém da PX vai ao local para cadastrar a senha.
 
 ![Fluxo da senha, da reserva à porta aberta](diagramas/fluxo-senha.svg)
 
@@ -10,9 +10,9 @@ A fechadura inteligente é obrigatória. A transportadora faz a reserva, e o mot
 
 | Requisito | Obrigatório? | Por quê |
 |---|---|---|
-| Criar senha por API, sem o app do fabricante | Sim | O backend PX cria a senha quando a reserva entra. |
+| Criar senha por API, sem o app do fabricante | Sim | A Torre PX cria a senha quando pré-reserva o quarto. |
 | Senha com início e fim | Sim | A senha vale só durante a reserva. |
-| Revogar senha | Sim | A transportadora pode cancelar a reserva. |
+| Revogar senha | Sim | A troca de motorista pode ser cancelada ou mudar. |
 | Teclado numérico na fechadura | Sim | O motorista digita a senha. |
 | Abrir sem internet depois da sincronização | Sim | A internet do local pode cair. |
 | Chave mecânica de emergência | Sim | A bateria pode acabar. |
@@ -40,5 +40,5 @@ Nada aqui está confirmado. Preencha a tabela com a fonte de cada resposta.
 
 ## Ligação com o resto do sistema
 
-- O backend PX recebe a reserva e chama a API da fechadura. O contrato desta chamada vai para [`../contracts/`](../contracts/) quando a marca for escolhida.
+- A Torre PX pré-reserva o quarto e chama a API da fechadura. O contrato desta chamada vai para [`../contracts/`](../contracts/) quando a marca for escolhida.
 - A fechadura não depende do hub de automação. Ela conversa com a nuvem da marca.

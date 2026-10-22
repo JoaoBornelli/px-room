@@ -27,6 +27,6 @@ A automação do chuveiro aciona uma válvula solenoide. A válvula libera ou bl
 
 ## Ligação com o resto do sistema
 
-- O backend PX registra os banhos usados e os banhos pagos.
+- A Torre PX registra os banhos usados e os banhos pagos.
 - O app do motorista mostra o direito ao banho e permite comprar outro banho.
 - O hub ou outro controlador aciona a válvula solenoide → [hub-automacao.md](hub-automacao.md).
