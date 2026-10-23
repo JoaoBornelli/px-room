@@ -14,6 +14,12 @@ Cada quarto mede cerca de 2 m × 2,5 m e tem uma cama de solteiro e um ar-condic
 
 ![Maquete do quarto PX: 2 × 2,5 m, cama de solteiro, janela com ar-condicionado e porta com fechadura](hardware/diagramas/planta-quarto.svg)
 
+## O banheiro comunitário
+
+O banheiro mede cerca de 6 m × 2,4 m e tem 4 boxes de chuveiro e 3 boxes de vaso, todos de 1,2 m × 0,85 m. Cada box de chuveiro tem uma fechadura (a definir) e uma válvula Zigbee com timer. O banheiro tem um detector de fumaça no teto do corredor.
+
+![Maquete do banheiro PX: 6 × 2,4 m, 4 boxes de chuveiro com fechadura e válvula, 3 boxes de vaso e detector de fumaça](hardware/diagramas/planta-banheiro.svg)
+
 ## Arquitetura
 
 Cada local tem uma central (mini PC) com Zigbee2MQTT. Os dispositivos dos quartos e do banheiro são Zigbee comerciais, em mesh: relé de parede, sensor de porta, emissor infravermelho e válvula do chuveiro. A fechadura do quarto fica fora da rede e valida a senha offline. O assistente de voz é uma camada separada, por Wi-Fi, na fase 2.
@@ -26,8 +32,6 @@ Fechadura do quarto: fora da rede, senha offline por algoritmo
 ```
 
 A decisão está na [ADR 0001](ADRs/0001-central-zigbee-por-local.md). O detalhe está em [`hardware/hub-automacao.md`](hardware/hub-automacao.md).
-
-> **Nota:** o diagrama abaixo ainda mostra a arquitetura anterior, com o hub Intelbras MCA. O diagrama precisa ser refeito.
 
 ![Visão geral do hardware do quarto PX](hardware/diagramas/visao-geral.svg)
 
