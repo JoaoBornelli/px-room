@@ -58,9 +58,9 @@
     <p class="eyebrow">Sequência · Quarto PX</p>
     <h1>Quarto PX: da reserva à porta aberta</h1>
     <div class="diagram-container">
-      <svg viewBox="0 0 1100 852" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="fluxo-senha-title fluxo-senha-desc">
+      <svg viewBox="0 0 1100 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="fluxo-senha-title fluxo-senha-desc">
         <title id="fluxo-senha-title">Quarto PX: da reserva à porta aberta</title>
-        <desc id="fluxo-senha-desc">Sequência da senha do quarto: o contrato prevê a troca, a Torre PX pré-reserva o quarto, pede a senha offline à API da fechadura (marca a definir) e a envia ao app. O motorista digita a senha, e a fechadura valida sem rede e abre. Em paralelo, o sensor de porta avisa a central do local, que liga a luz e registra a entrada na Torre. Se a troca é cancelada, a Torre revoga a senha, desde que exista gateway.</desc>
+        <desc id="fluxo-senha-desc">Sequência da senha do quarto: o contrato prevê a troca, a Torre PX pré-reserva o quarto, pede a senha offline à API da fechadura (marca a definir) e a envia ao app. O motorista digita a senha, e a fechadura valida sem rede e abre. A central do local liga o relé da luz por comando; o gatilho está a definir, e o quarto não tem sensor de porta. Se a troca é cancelada, a Torre revoga a senha, desde que exista gateway.</desc>
         <defs>
           <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4B5563"/></marker>
           <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#1f6fbf"/></marker>
@@ -68,21 +68,17 @@
           <marker id="arrow-open" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polyline points="0 0, 8 3, 0 6" fill="none" stroke="#4B5563" stroke-width="1.2"/></marker>
         </defs>
         <rect width="100%" height="100%" fill="#f6f7f9"/>
-        <line x1="90" y1="96" x2="90" y2="776" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
-        <line x1="238" y1="96" x2="238" y2="776" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
-        <line x1="386" y1="96" x2="386" y2="776" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
-        <line x1="534" y1="96" x2="534" y2="776" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
-        <line x1="682" y1="96" x2="682" y2="776" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
-        <line x1="830" y1="96" x2="830" y2="776" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
-        <line x1="978" y1="96" x2="978" y2="776" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
-        <rect x="40" y="484" width="1020" height="156" rx="4" fill="rgba(15,61,102,0.02)" stroke="rgba(15,61,102,0.22)" stroke-width="1"/>
-        <rect x="40" y="484" width="32" height="16" rx="2" fill="#f6f7f9" stroke="rgba(15,61,102,0.22)" stroke-width="1"/>
-        <text x="56" y="496" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.12em">PAR</text>
-        <text x="84" y="496" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.04em">[em paralelo: o sensor de porta avisa a central]</text>
-        <rect x="40" y="664" width="420" height="104" rx="4" fill="rgba(15,61,102,0.02)" stroke="rgba(15,61,102,0.22)" stroke-width="1"/>
-        <rect x="40" y="664" width="32" height="16" rx="2" fill="#f6f7f9" stroke="rgba(15,61,102,0.22)" stroke-width="1"/>
-        <text x="56" y="676" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.12em">OPT</text>
-        <text x="84" y="676" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.04em">[troca cancelada · só com gateway]</text>
+        <line x1="90" y1="96" x2="90" y2="724" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="238" y1="96" x2="238" y2="724" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="386" y1="96" x2="386" y2="724" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="534" y1="96" x2="534" y2="724" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="682" y1="96" x2="682" y2="724" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="830" y1="96" x2="830" y2="724" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="978" y1="96" x2="978" y2="724" stroke="rgba(15,61,102,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="40" y="612" width="420" height="104" rx="4" fill="rgba(15,61,102,0.02)" stroke="rgba(15,61,102,0.22)" stroke-width="1"/>
+        <rect x="40" y="612" width="32" height="16" rx="2" fill="#f6f7f9" stroke="rgba(15,61,102,0.22)" stroke-width="1"/>
+        <text x="56" y="624" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.12em">OPT</text>
+        <text x="84" y="624" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.04em">[troca cancelada · só com gateway]</text>
         <path d="M 90,140 H 236" fill="none" stroke="#4B5563" stroke-width="1.2" marker-end="url(#arrow)"/>
         <rect x="122" y="120" width="84" height="12" rx="2" fill="#f6f7f9"/><text x="164" y="129" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">TROCA PREVISTA</text>
         <path d="M 238,176 H 262 Q 270,176 270,184 V 192 Q 270,200 262,200 H 240" fill="none" stroke="#4B5563" stroke-width="1.2" marker-end="url(#arrow)"/>
@@ -99,39 +95,37 @@
         <rect x="722" y="406" width="84" height="12" rx="2" fill="#f6f7f9"/><text x="764" y="415" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">VALIDA OFFLINE</text>
         <path d="M 682,452 H 536" fill="none" stroke="#4B5563" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
         <rect x="582" y="432" width="52" height="12" rx="2" fill="#f6f7f9"/><text x="608" y="441" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">DESTRAVA</text>
-        <path d="M 978,528 H 832" fill="none" stroke="#1f6fbf" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
-        <rect x="868" y="508" width="72" height="12" rx="2" fill="#f6f7f9"/><text x="904" y="517" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">PORTA ABERTA</text>
-        <path d="M 830,556 H 854 Q 862,556 862,564 V 572 Q 862,580 854,580 H 832" fill="none" stroke="#4B5563" stroke-width="1.2" marker-end="url(#arrow)"/>
-        <rect x="870" y="562" width="64" height="12" rx="2" fill="#f6f7f9"/><text x="902" y="571" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">LIGA A LUZ</text>
-        <path d="M 830,616 H 240" fill="none" stroke="#4B5563" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
-        <rect x="488" y="596" width="92" height="12" rx="2" fill="#f6f7f9"/><text x="534" y="605" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">REGISTRA ENTRADA</text>
-        <path d="M 90,712 H 236" fill="none" stroke="#4B5563" stroke-width="1.2" marker-end="url(#arrow)"/>
-        <rect x="124" y="692" width="80" height="12" rx="2" fill="#f6f7f9"/><text x="164" y="701" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">CANCELA TROCA</text>
-        <path d="M 238,748 H 384" fill="none" stroke="#117a42" stroke-width="1.2" marker-end="url(#arrow-link)"/>
-        <rect x="276" y="728" width="72" height="12" rx="2" fill="#f6f7f9"/><text x="312" y="737" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">REVOGA SENHA</text>
+        <path d="M 830,528 H 976" fill="none" stroke="#1f6fbf" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <rect x="870" y="508" width="68" height="12" rx="2" fill="#f6f7f9"/><text x="904" y="517" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">LIGA O RELÉ</text>
+        <rect x="790" y="544" width="212" height="20" rx="3" fill="#ffffff" stroke="rgba(15,61,102,0.22)" stroke-width="1"/>
+        <text x="896" y="557" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">gatilho a definir; sem sensor de porta</text>
+        <path d="M 90,660 H 236" fill="none" stroke="#4B5563" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="124" y="640" width="80" height="12" rx="2" fill="#f6f7f9"/><text x="164" y="649" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">CANCELA TROCA</text>
+        <path d="M 238,696 H 384" fill="none" stroke="#117a42" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+        <rect x="276" y="676" width="72" height="12" rx="2" fill="#f6f7f9"/><text x="312" y="685" fill="#5b6578" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">REVOGA SENHA</text>
         <rect x="26" y="48" width="128" height="48" rx="6" fill="#f6f7f9"/><rect x="26" y="48" width="128" height="48" rx="6" fill="rgba(15,61,102,0.03)" stroke="rgba(15,61,102,0.3)" stroke-width="1"/><rect x="34" y="54" width="24" height="12" rx="2" fill="none" stroke="rgba(15,61,102,0.25)" stroke-width="0.8"/><text x="46" y="63" fill="#5b6578" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">EXT</text><text x="90" y="82" fill="#0F3D66" font-size="12" font-weight="600" font-family="'Nunito', system-ui, sans-serif" text-anchor="middle">Contrato e rota</text><text x="90" y="90" fill="#4B5563" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle"></text>
         <rect x="174" y="48" width="128" height="48" rx="6" fill="#f6f7f9"/><rect x="174" y="48" width="128" height="48" rx="6" fill="#ffffff" stroke="#0F3D66" stroke-width="1"/><rect x="182" y="54" width="24" height="12" rx="2" fill="none" stroke="rgba(15,61,102,0.25)" stroke-width="0.8"/><text x="194" y="63" fill="#5b6578" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">API</text><text x="238" y="82" fill="#0F3D66" font-size="12" font-weight="600" font-family="'Nunito', system-ui, sans-serif" text-anchor="middle">Torre PX</text><text x="238" y="90" fill="#4B5563" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle"></text>
         <rect x="322" y="48" width="128" height="48" rx="6" fill="#f6f7f9"/><rect x="322" y="48" width="128" height="48" rx="6" fill="rgba(15,61,102,0.03)" stroke="rgba(15,61,102,0.3)" stroke-width="1"/><rect x="330" y="54" width="24" height="12" rx="2" fill="none" stroke="rgba(15,61,102,0.25)" stroke-width="0.8"/><text x="342" y="63" fill="#5b6578" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">EXT</text><text x="386" y="76" fill="#0F3D66" font-size="12" font-weight="600" font-family="'Nunito', system-ui, sans-serif" text-anchor="middle">API da fechadura</text><text x="386" y="90" fill="#4B5563" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">marca a definir</text>
         <rect x="470" y="48" width="128" height="48" rx="6" fill="#f6f7f9"/><rect x="470" y="48" width="128" height="48" rx="6" fill="rgba(75,85,99,0.1)" stroke="#5b6578" stroke-width="1"/><rect x="478" y="54" width="24" height="12" rx="2" fill="none" stroke="rgba(15,61,102,0.25)" stroke-width="0.8"/><text x="490" y="63" fill="#5b6578" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">APP</text><text x="534" y="82" fill="#0F3D66" font-size="12" font-weight="600" font-family="'Nunito', system-ui, sans-serif" text-anchor="middle">Motorista (app)</text><text x="534" y="90" fill="#4B5563" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle"></text>
         <rect x="618" y="48" width="128" height="48" rx="6" fill="#f6f7f9"/><rect x="618" y="48" width="128" height="48" rx="6" fill="rgba(31,111,191,0.08)" stroke="#1f6fbf" stroke-width="1"/><rect x="626" y="54" width="28" height="12" rx="2" fill="none" stroke="rgba(31,111,191,0.4)" stroke-width="0.8"/><text x="640" y="63" fill="#1f6fbf" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">LOCK</text><text x="682" y="76" fill="#0F3D66" font-size="12" font-weight="600" font-family="'Nunito', system-ui, sans-serif" text-anchor="middle">Fechadura</text><text x="682" y="90" fill="#4B5563" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">offline</text>
         <rect x="766" y="48" width="128" height="48" rx="6" fill="#f6f7f9"/><rect x="766" y="48" width="128" height="48" rx="6" fill="#ffffff" stroke="#0F3D66" stroke-width="1"/><rect x="774" y="54" width="24" height="12" rx="2" fill="none" stroke="rgba(15,61,102,0.25)" stroke-width="0.8"/><text x="786" y="63" fill="#5b6578" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">HUB</text><text x="830" y="82" fill="#0F3D66" font-size="12" font-weight="600" font-family="'Nunito', system-ui, sans-serif" text-anchor="middle">Central do local</text><text x="830" y="90" fill="#4B5563" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle"></text>
-        <rect x="914" y="48" width="128" height="48" rx="6" fill="#f6f7f9"/><rect x="914" y="48" width="128" height="48" rx="6" fill="rgba(15,61,102,0.05)" stroke="#4B5563" stroke-width="1"/><rect x="922" y="54" width="20" height="12" rx="2" fill="none" stroke="rgba(15,61,102,0.25)" stroke-width="0.8"/><text x="932" y="63" fill="#5b6578" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">ZB</text><text x="978" y="82" fill="#0F3D66" font-size="12" font-weight="600" font-family="'Nunito', system-ui, sans-serif" text-anchor="middle">Sensor de porta</text><text x="978" y="90" fill="#4B5563" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle"></text>
-        <line x1="24" y1="792" x2="1076" y2="792" stroke="rgba(15,61,102,0.1)" stroke-width="0.8"/>
-        <text x="24" y="812" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em">LEGENDA</text>
-        <rect x="100" y="804" width="16" height="10" rx="2" fill="rgba(31,111,191,0.08)" stroke="#1f6fbf" stroke-width="1"/>
-        <text x="122" y="812" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">FOCO DA INVESTIGAÇÃO</text>
-        <rect x="244" y="804" width="16" height="10" rx="2" fill="#ffffff" stroke="#0F3D66" stroke-width="1"/>
-        <text x="266" y="812" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">SISTEMA PX / CONTROLE</text>
-        <rect x="392" y="804" width="16" height="10" rx="2" fill="rgba(15,61,102,0.03)" stroke="rgba(15,61,102,0.3)" stroke-width="1"/>
-        <text x="414" y="812" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">SERVIÇO EXTERNO</text>
-        <rect x="512" y="804" width="16" height="10" rx="2" fill="rgba(75,85,99,0.1)" stroke="#5b6578" stroke-width="1"/>
-        <text x="534" y="812" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">PESSOA / ENTRADA</text>
-        <rect x="636" y="804" width="16" height="10" rx="2" fill="rgba(15,61,102,0.05)" stroke="#4B5563" stroke-width="1"/>
-        <text x="658" y="812" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">DISPOSITIVO</text>
-        <line x1="736" y1="809" x2="760" y2="809" stroke="#117a42" stroke-width="1.2" marker-end="url(#arrow-link)"/>
-        <text x="768" y="812" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">API</text>
-        <line x1="804" y1="809" x2="828" y2="809" stroke="#4B5563" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
-        <text x="836" y="812" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">RESPOSTA / REGISTRO</text>
+        <rect x="914" y="48" width="128" height="48" rx="6" fill="#f6f7f9"/><rect x="914" y="48" width="128" height="48" rx="6" fill="rgba(15,61,102,0.05)" stroke="#4B5563" stroke-width="1"/><rect x="922" y="54" width="20" height="12" rx="2" fill="none" stroke="rgba(15,61,102,0.25)" stroke-width="0.8"/><text x="932" y="63" fill="#5b6578" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">ZB</text><text x="978" y="76" fill="#0F3D66" font-size="12" font-weight="600" font-family="'Nunito', system-ui, sans-serif" text-anchor="middle">Relé da luz</text><text x="978" y="90" fill="#4B5563" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">Zigbee</text>
+        <line x1="24" y1="740" x2="1076" y2="740" stroke="rgba(15,61,102,0.1)" stroke-width="0.8"/>
+        <text x="24" y="760" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em">LEGENDA</text>
+        <rect x="100" y="752" width="16" height="10" rx="2" fill="rgba(31,111,191,0.08)" stroke="#1f6fbf" stroke-width="1"/>
+        <text x="122" y="760" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">FOCO DA INVESTIGAÇÃO</text>
+        <rect x="244" y="752" width="16" height="10" rx="2" fill="#ffffff" stroke="#0F3D66" stroke-width="1"/>
+        <text x="266" y="760" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">SISTEMA PX / CONTROLE</text>
+        <rect x="392" y="752" width="16" height="10" rx="2" fill="rgba(15,61,102,0.03)" stroke="rgba(15,61,102,0.3)" stroke-width="1"/>
+        <text x="414" y="760" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">SERVIÇO EXTERNO</text>
+        <rect x="512" y="752" width="16" height="10" rx="2" fill="rgba(75,85,99,0.1)" stroke="#5b6578" stroke-width="1"/>
+        <text x="534" y="760" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">PESSOA / ENTRADA</text>
+        <rect x="636" y="752" width="16" height="10" rx="2" fill="rgba(15,61,102,0.05)" stroke="#4B5563" stroke-width="1"/>
+        <text x="658" y="760" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">DISPOSITIVO</text>
+        <line x1="736" y1="757" x2="760" y2="757" stroke="#117a42" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+        <text x="768" y="760" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">API</text>
+        <line x1="804" y1="757" x2="828" y2="757" stroke="#4B5563" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <text x="836" y="760" fill="#4B5563" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.08em">RESPOSTA</text>
       </svg>
     </div>
   </div>

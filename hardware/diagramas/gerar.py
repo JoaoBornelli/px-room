@@ -297,19 +297,18 @@ def frag(fx, fy, fw, fh, tag, text):
 
 
 def fluxo_senha():
-    W, H = 1100, 852
+    W, H = 1100, 800
     X = [90, 238, 386, 534, 682, 830, 978]
     names = [("EXT", "Contrato e rota", "external", ""), ("API", "Torre PX", "backend", ""),
              ("EXT", "API da fechadura", "external", "marca a definir"), ("APP", "Motorista (app)", "input", ""),
              ("LOCK", "Fechadura", "focal", "offline"), ("HUB", "Central do local", "backend", ""),
-             ("ZB", "Sensor de porta", "device", "")]
+             ("ZB", "Relé da luz", "device", "Zigbee")]
     BW, BH, TOP = 128, 48, 48
-    BOTTOM = 776
+    BOTTOM = 724
     p = []
     for x in X:
         p.append(f'<line x1="{x}" y1="{TOP + BH}" x2="{x}" y2="{BOTTOM}" stroke="{ink(0.20)}" stroke-width="1" stroke-dasharray="3,3"/>')
-    p += frag(40, 484, 1020, 156, "PAR", "[em paralelo: o sensor de porta avisa a central]")
-    p += frag(40, 664, 420, 104, "OPT", "[troca cancelada · só com gateway]")
+    p += frag(40, 612, 420, 104, "OPT", "[troca cancelada · só com gateway]")
 
     def msg(a, b, y, text, color=MUTED, dashed=False, marker=None, lx=None):
         x1, x2 = X[a], X[b]
@@ -333,19 +332,21 @@ def fluxo_senha():
     msg(3, 4, 368, "DIGITA SENHA")
     selfmsg(4, 400, "VALIDA OFFLINE")
     msg(4, 3, 452, "DESTRAVA", dashed=True)
-    msg(6, 5, 528, "PORTA ABERTA", ACCENT)
-    selfmsg(5, 556, "LIGA A LUZ")
-    msg(5, 1, 616, "REGISTRA ENTRADA", dashed=True)
-    msg(0, 1, 712, "CANCELA TROCA")
-    msg(1, 2, 748, "REVOGA SENHA", LINK)
+    msg(5, 6, 528, "LIGA O RELÉ", ACCENT)
+    nota = "gatilho a definir; sem sensor de porta"
+    nw = label_w(nota) + 8
+    p.append(f'<rect x="{X[5] - 40}" y="544" width="{nw:g}" height="20" rx="3" fill="{WHITE}" stroke="{ink(0.22)}" stroke-width="1"/>')
+    p.append(f'<text x="{X[5] - 40 + nw / 2:g}" y="557" fill="{SOFT}" font-size="8" font-family="{FM}" text-anchor="middle" letter-spacing="0.06em">{nota}</text>')
+    msg(0, 1, 660, "CANCELA TROCA")
+    msg(1, 2, 696, "REVOGA SENHA", LINK)
     for x, (tag, name, kind, sub) in zip(X, names):
         p.append(node(x - BW // 2, TOP, BW, BH, kind, tag, name, sub))
-    p += legend(800, W, ["focal", "backend", "external", "input", "device"],
-                [(LINK, False, "API"), (MUTED, True, "RESPOSTA / REGISTRO")])
+    p += legend(748, W, ["focal", "backend", "external", "input", "device"],
+                [(LINK, False, "API"), (MUTED, True, "RESPOSTA")])
     page("fluxo-senha", "Sequência · Quarto PX", "Quarto PX: da reserva à porta aberta",
          "Sequência da senha do quarto: o contrato prevê a troca, a Torre PX pré-reserva o quarto, pede a senha offline à API da fechadura (marca a definir) "
-         "e a envia ao app. O motorista digita a senha, e a fechadura valida sem rede e abre. Em paralelo, o sensor de porta avisa a central do local, "
-         "que liga a luz e registra a entrada na Torre. Se a troca é cancelada, a Torre revoga a senha, desde que exista gateway.",
+         "e a envia ao app. O motorista digita a senha, e a fechadura valida sem rede e abre. A central do local liga o relé da luz por comando; "
+         "o gatilho está a definir, e o quarto não tem sensor de porta. Se a troca é cancelada, a Torre revoga a senha, desde que exista gateway.",
          W, H, p)
 
 
@@ -358,14 +359,9 @@ def rele_interruptores():
     R1, R2, R3 = 96, 264, 408
     p = []
     p.append(zone(728, 232, 208, 256, "127/220 V"))
-    # linha 1: sensor → coordenador ⇄ central
-    p.append(arrow(f"M {A + NW},{R1 + 28} H {B}"))
-    p.append(label_above((A + NW + B) / 2, R1 + 28, "PORTA ABERTA"))
-    p.append(arrow(f"M {C},{R1 + 16} H {B + NW}"))
-    p.append(label_above((B + NW + C) / 2, R1 + 16, "EVENTO"))
-    p.append(arrow(f"M {B + NW},{R1 + 44} H {C}"))
-    p.append(label_above((B + NW + C) / 2, R1 + 44, "COMANDO"))
-    # coordenador → relé pela mesh
+    # linha 1: central → coordenador → relé (comando pela mesh)
+    p.append(arrow(f"M {A + NW},{R1 + 28} H {B}", dashed=True))
+    p.append(label_above((A + NW + B) / 2, R1 + 28, "COMANDO"))
     p.append(arrow(f"M {B + 80},{R1 + NH} V {R2}", dashed=True))
     p.append(label_right(B + 80, (R1 + NH + R2) / 2, "MESH ZIGBEE"))
     # interruptor → relé (local, sem a central)
@@ -375,9 +371,8 @@ def rele_interruptores():
     p.append(label_above((B + NW + C) / 2, R2 + 28, "LIGA / DESLIGA"))
     p.append(arrow(f"M {C},{R3 + 28} H {B + 88} Q {B + 80},{R3 + 28} {B + 80},{R3 + 20} V {R2 + NH}"))
     p.append(label_above((B + 88 + C) / 2, R3 + 28, "FASE E NEUTRO?"))
-    p.append(node(A, R1, NW, NH, "device", "ZB", "Sensor de porta", "bateria"))
+    p.append(node(A, R1, NW, NH, "backend", "HUB", "Central do local", "Zigbee2MQTT"))
     p.append(node(B, R1, NW, NH, "device", "ZB", "Coordenador Zigbee", "de rede"))
-    p.append(node(C, R1, NW, NH, "backend", "HUB", "Central do local", "Zigbee2MQTT + regras"))
     p.append(node(A, R2, NW, NH, "input", "IN", "Interruptor", "pulsador ou chave?"))
     p.append(node(B, R2, NW, NH, "focal", "ZB", "Relé Zigbee de parede", "roteador + entrada"))
     p.append(node(C, R2, NW, NH, "device", "DEV", "Lâmpada", "ponto de luz"))
@@ -385,8 +380,8 @@ def rele_interruptores():
     p += legend(512, W, ["focal", "backend", "input", "device", "external"],
                 [(LINK, False, "SINAL LOCAL"), (MUTED, True, "ZIGBEE")])
     page("rele-interruptores", "Arquitetura · Quarto PX", "Quarto PX: relé Zigbee e interruptor",
-         "O interruptor liga na entrada do relé Zigbee de parede e aciona a luz sem a central. A central do local também comanda o relé pela mesh Zigbee, "
-         "por meio do coordenador. Quando o sensor de porta abre, o evento chega à central, que liga a luz pelo relé. O relé chaveia a fase da rede elétrica para a lâmpada.",
+         "O interruptor aciona o relé Zigbee de parede sem a central. A central do local também comanda o relé pela mesh Zigbee, "
+         "por meio do coordenador. O quarto não tem sensor de porta. O relé chaveia a fase da rede elétrica para a lâmpada.",
          W, H, p)
 
 
