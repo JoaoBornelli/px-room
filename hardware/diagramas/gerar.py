@@ -235,8 +235,8 @@ def visao_geral():
     p = []
     p.append(zone(376, 64, 544, 112, "NUVEM"))
     p.append(zone(40, 312, 880, 256, "LOCAL (UNIDADE)"))
-    p.append(zone(40, 448, 664, 104, "QUARTO · MESH ZIGBEE"))
-    p.append(zone(720, 448, 200, 104, "BANHEIRO"))
+    p.append(zone(56, 448, 416, 104, "QUARTO"))
+    p.append(zone(488, 448, 416, 104, "BANHEIRO"))
     # nuvem
     p.append(arrow(f"M {A + NW},{R1 + 28} H {B}"))
     p.append(label_above((A + NW + B) / 2, R1 + 28, "TROCA PREVISTA"))
@@ -256,10 +256,13 @@ def visao_geral():
     p.append(arrow(f"M {B + NW},{R3 + 28} H {C}"))
     p.append(label_above((B + NW + C) / 2, R3 + 28, "ETHERNET / PoE"))
     bus = R3 + NH + 24
-    drops = [A + 80, 368, 592, C + 80]
-    p.append(f'<path d="M {C + 80},{R3 + NH} V {bus} H {drops[0]}" fill="none" stroke="{MUTED}" stroke-width="1.2"/>')
-    for x in drops:
+    drops = [160, 368, 592, 800]      # centros dos nós da mesh
+    p.append(f'<path d="M {drops[3]},{R3 + NH} V {bus} H {drops[0]}" fill="none" stroke="{MUTED}" stroke-width="1.2"/>')
+    for x in (drops[0], drops[3]):
         p.append(arrow(f"M {x},{bus} V {R4}"))
+    for x in (drops[1], drops[2]):      # detectores: o alarme sobe pela mesh até a central
+        p.append(arrow(f"M {x},{R4} V {bus}"))
+        p.append(label_right(x, 462, "ALARME"))
     p.append(label_above(480, bus, "MESH ZIGBEE"))
     # caixas
     p.append(node(A, R1, NW, NH, "external", "EXT", "Contrato e rota", "define a troca"))
@@ -270,16 +273,16 @@ def visao_geral():
     p.append(node(A, R3, NW, NH, "focal", "LOCK", "Fechadura do quarto", "fora da Zigbee · offline"))
     p.append(node(B, R3, NW, NH, "focal", "HUB", "Central do local", "MQTT · Zigbee2MQTT"))
     p.append(node(C, R3, NW, NH, "device", "ZB", "Coordenador Zigbee", "de rede"))
-    p.append(node(A, R4, NW, NH, "device", "ZB", "Relé de parede", "roteador + interruptor"))
-    p.append(node(288, R4, NW, NH, "device", "ZB", "Sensor de porta", "bateria"))
-    p.append(node(512, R4, NW, NH, "device", "ZB", "Emissor IR", "ar-condicionado"))
-    p.append(node(C, R4, NW, NH, "device", "ZB", "Válvula do chuveiro", "NF · timer"))
+    p.append(node(80, R4, NW, NH, "device", "ZB", "Relé de parede", "roteador + interruptor"))
+    p.append(node(288, R4, NW, NH, "device", "ZB", "Detector de fumaça", "Zigbee (a confirmar)"))
+    p.append(node(512, R4, NW, NH, "device", "ZB", "Detector de fumaça", "Zigbee (a confirmar)"))
+    p.append(node(720, R4, NW, NH, "device", "ZB", "Válvula do chuveiro", "NF · timer"))
     p += legend(600, W, ["focal", "backend", "external", "input", "device", "optional"],
                 [(LINK, False, "API")])
     page("visao-geral", "Arquitetura · Quarto PX", "Quarto PX: central do local e mesh Zigbee",
          "Arquitetura do quarto PX: a Torre PX pré-reserva o quarto, pede a senha offline à API da fechadura (marca a definir) e a envia ao app; "
          "o motorista digita a senha na fechadura, que fica fora da rede Zigbee. A central do local fala com a Torre e, pelo coordenador Zigbee, "
-         "com a mesh do quarto (relé de parede, sensor de porta, emissor infravermelho) e do banheiro (válvula do chuveiro). O assistente de voz é opcional, fase 2.",
+         "com a mesh do quarto (relé de parede, detector de fumaça) e do banheiro (válvula do chuveiro, detector de fumaça). Os detectores avisam a central em caso de alarme. O assistente de voz é opcional, fase 2.",
          W, H, p)
 
 
