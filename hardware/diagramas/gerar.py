@@ -355,29 +355,36 @@ def rele_interruptores():
          W, H, p)
 
 
-# ---------- 4. maquete do quarto (axonométrica) ----------
+# ---------- 4. maquetes axonométricas (quarto e banheiro) ----------
 
 def iso(x, y, z, ox, oy):
     return ox + x - y, oy + (x + y) / 2 - z
 
 
-def planta():
-    """Quarto PX: 2 m x 2,5 m. Escala: 150 unidades de modelo por metro."""
-    W = 1000
-    OX, OY = 480, 100
-    PX, PY = 312, 387                 # placa: interior 300 x 375 (2 m x 2,5 m) + paredes de 6
-    T = 6                             # espessura da placa
-    WH = 22                           # parede cortada na altura da mesa
+def caixa(nome, x0, y0, x1, y1, z, h, focal=False, estilo=""):
+    """Caixa da maquete. estilo: "" (móvel), "parede", "vidro" ou "redondo" (cilindro)."""
+    return (nome, x0, y0, x1, y1, z, h, focal, estilo)
 
-    def P(x, y, z):
-        sx, sy = iso(x, y, z, OX, OY)
+
+class Axo:
+    """Helpers da maquete axonométrica (projeção dimétrica 2:1, origem em ox, oy)."""
+
+    def __init__(self, ox, oy, w):
+        self.ox, self.oy, self.w = ox, oy, w
+
+    def pt(self, x, y, z):
+        return iso(x, y, z, self.ox, self.oy)
+
+    def P(self, x, y, z):
+        sx, sy = self.pt(x, y, z)
         return f"{sx:g} {sy:g}"
 
+    @staticmethod
     def poly(pts):
         return "M " + " L ".join(pts) + " Z"
 
-    def prism(x0, y0, x1, y1, z, h, focal=False, strong=False, glass=False):
-        t = z + h
+    def prism(self, x0, y0, x1, y1, z, h, focal=False, strong=False, glass=False):
+        P, poly, t = self.P, self.poly, z + h
         sil = poly([P(x0, y1, t), P(x0, y0, t), P(x1, y0, t), P(x1, y0, z), P(x1, y1, z), P(x0, y1, z)])
         left = poly([P(x0, y1, t), P(x1, y1, t), P(x1, y1, z), P(x0, y1, z)])
         right = poly([P(x1, y1, t), P(x1, y0, t), P(x1, y0, z), P(x1, y1, z)])
@@ -396,66 +403,86 @@ def planta():
                 f'<path d="{sil}" fill="none" stroke="{INK}" stroke-width="{sw}" stroke-linejoin="round"/>')
         return out
 
-    # paredes (x0, y0, x1, y1). Parede dos fundos (y=0): janela. Parede da frente (y=381..387): porta, vão de x=180 a x=300.
-    walls = [
-        (0, 0, 312, 6), (0, 6, 6, 387), (306, 6, 312, 387),
-        (6, 381, 180, 387), (300, 381, 306, 387),
-    ]
-    # móveis e dispositivos: (nome, x0, y0, x1, y1, z, h, focal)
-    things = [
-        ("Cama", 12, 12, 140, 297, T, 8, False),
-        ("Colchão", 14, 14, 138, 295, T + 8, 10, False),
-        ("Travesseiro", 20, 18, 132, 58, T + 18, 6, False),
-        ("Cômoda", 246, 150, 306, 270, T, 30, False),
-        ("Assistente", 266, 190, 284, 208, T + 30, 10, False),
-        ("janela", 144, 1, 270, 5, T + WH, 46, False),
-        ("Ar-condicionado", 144, 6, 270, 24, T + WH + 48, 18, False),
-        ("Interruptor", 300, 381, 306, 387, T + WH, 12, False),
-        ("Fechadura", 168, 381, 180, 387, T + WH, 14, True),
-    ]
-    boxes = [("parede", *w, T, WH, False) for w in walls] + things
+    def cylinder(self, cx, cy, r, z, h, focal=False):
+        """Cilindro de raio r em pé no ponto (cx, cy). Na projeção 2:1 o círculo vira elipse r*sqrt(2) x r/sqrt(2)."""
+        rx, ry = r * 2 ** 0.5, r / 2 ** 0.5
+        sx, st = self.pt(cx, cy, z + h)
+        sb = st + h
+        L, R = f"{sx - rx:g} {st:g}", f"{sx + rx:g} {st:g}"
+        Lb, Rb = f"{sx - rx:g} {sb:g}", f"{sx + rx:g} {sb:g}"
+        a = f"{rx:g} {ry:g} 0 0"
+        sil = f"M {L} A {a} 1 {R} L {Rb} A {a} 1 {Lb} Z"
+        side = f"M {L} L {Lb} A {a} 0 {Rb} L {Rb} L {R} A {a} 1 {L} Z"
+        side_fill = acc(0.32) if focal else ink(0.15)
+        top_fill = acc(0.10) if focal else WHITE
+        return (f'<path data-role="silhouette" d="{sil}" fill="{WHITE}"/>'
+                f'<path d="{side}" fill="{side_fill}"/>'
+                f'<ellipse cx="{sx:g}" cy="{st:g}" rx="{rx:g}" ry="{ry:g}" fill="{top_fill}"/>'
+                f'<path d="M {L} A {a} 0 {R}" fill="none" stroke="{ink(0.55)}" stroke-width="0.8"/>'
+                f'<path d="{sil}" fill="none" stroke="{INK}" stroke-width="0.8" stroke-linejoin="round"/>')
 
-    def screen_bbox(b):
-        _, x0, y0, x1, y1, z, h, _ = b
-        pts = [iso(x, y, zz, OX, OY) for x in (x0, x1) for y in (y0, y1) for zz in (z, z + h)]
-        xs, ys = [p[0] for p in pts], [p[1] for p in pts]
-        return min(xs), min(ys), max(xs), max(ys)
+    def boxes(self, boxes):
+        """Pinta as caixas de trás para frente (ordem topológica, como pede a skill)."""
+        ox, oy = self.ox, self.oy
 
-    def overlap(a, b):
-        A_, B_ = screen_bbox(a), screen_bbox(b)
-        return A_[0] < B_[2] and B_[0] < A_[2] and A_[1] < B_[3] and B_[1] < A_[3]
+        def screen_bbox(b):
+            _, x0, y0, x1, y1, z, h, _, _ = b
+            pts = [iso(x, y, zz, ox, oy) for x in (x0, x1) for y in (y0, y1) for zz in (z, z + h)]
+            xs, ys = [q[0] for q in pts], [q[1] for q in pts]
+            return min(xs), min(ys), max(xs), max(ys)
 
-    def behind(a, b):
-        return a[3] <= b[1] or a[4] <= b[2]  # a.x1 <= b.x0 or a.y1 <= b.y0
+        def overlap(a, b):
+            A_, B_ = screen_bbox(a), screen_bbox(b)
+            return A_[0] < B_[2] and B_[0] < A_[2] and A_[1] < B_[3] and B_[1] < A_[3]
 
-    order, rest = [], list(boxes)
-    while rest:
-        for cand in rest:
-            if not any(o is not cand and overlap(o, cand) and behind(o, cand) for o in rest):
-                order.append(cand)
-                rest.remove(cand)
-                break
-        else:
-            raise RuntimeError("ordem de pintura sem solução")
+        def behind(a, b):
+            if a[3] <= b[1] or a[4] <= b[2]:          # a.x1 <= b.x0 ou a.y1 <= b.y0
+                return True
+            stacked = a[1] < b[3] and b[1] < a[3] and a[2] < b[4] and b[2] < a[4]
+            return stacked and a[5] + a[6] <= b[5]    # a embaixo de b, na mesma planta
 
-    p = [f'<g data-axo-plan data-origin="{OX} {OY}">']
-    plate = prism(0, 0, PX, PY, 0, T, strong=True)
-    p.append(f'<g data-plate data-rect="0 0 {PX} {PY} 0" data-z="0" data-t="{T}">{plate}</g>')
-    p.append(f'<g data-room data-name="Quarto" data-rect="6 6 306 381 0"></g>')
-    for b in order:
-        name, x0, y0, x1, y1, z, h, focal = b
-        kind = "wall" if name == "parede" else "furniture"
-        f = " data-focal" if focal else ""
-        p.append(f'<g data-box data-rect="{x0} {y0} {x1} {y1} 0" data-z="{z}" data-h="{h}" data-kind="{kind}"{f}>'
-                 f'{prism(x0, y0, x1, y1, z, h, focal, glass=(name == "janela"))}</g>')
+        order, rest = [], list(boxes)
+        while rest:
+            for cand in rest:
+                if not any(o is not cand and overlap(o, cand) and behind(o, cand) for o in rest):
+                    order.append(cand)
+                    rest.remove(cand)
+                    break
+            else:
+                raise RuntimeError("ordem de pintura sem solução")
 
-    # cotas: 2 m na frente, 2,5 m na lateral direita
-    def dim(a, b, tk, label):
-        A, B = iso(*a, 0, OX, OY), iso(*b, 0, OX, OY)
+        out = []
+        for name, x0, y0, x1, y1, z, h, focal, estilo in order:
+            kind = "wall" if estilo == "parede" else "furniture"
+            f = " data-focal" if focal else ""
+            if estilo == "redondo":
+                r = (x1 - x0) / 2
+                shape = self.cylinder((x0 + x1) / 2, (y0 + y1) / 2, r, z, h, focal)
+            else:
+                r = 0
+                shape = self.prism(x0, y0, x1, y1, z, h, focal, glass=(estilo == "vidro"))
+            out.append(f'<g data-box data-rect="{x0:g} {y0:g} {x1:g} {y1:g} {r:g}" data-z="{z:g}" data-h="{h:g}" '
+                       f'data-kind="{kind}"{f}>{shape}</g>')
+        return out
+
+    def ceiling(self, cx, cy, r, floor_z, ceil_z, h=6):
+        """Item de teto: cilindro rente ao teto, prumo tracejado até o piso e a marca do ponto no piso."""
+        sx, sf = self.pt(cx, cy, floor_z)
+        _, sb = self.pt(cx, cy, ceil_z - h)
+        rx, ry = r * 2 ** 0.5, r / 2 ** 0.5
+        return [
+            f'<ellipse cx="{sx:g}" cy="{sf:g}" rx="{rx:g}" ry="{ry:g}" fill="none" stroke="{ink(0.35)}" stroke-width="0.8" stroke-dasharray="3,3"/>',
+            f'<path d="M {sx:g} {sb:g} L {sx:g} {sf:g}" fill="none" stroke="{ink(0.35)}" stroke-width="0.8" stroke-dasharray="3,3"/>',
+            f'<g data-box data-rect="{cx - r:g} {cy - r:g} {cx + r:g} {cy + r:g} {r:g}" data-z="{ceil_z - h:g}" data-h="{h:g}" '
+            f'data-kind="furniture">{self.cylinder(cx, cy, r, ceil_z - h, h)}</g>',
+        ]
+
+    def dim(self, a, b, tk, label, z=0):
+        A, B = self.pt(*a, z), self.pt(*b, z)
         out = f'<path d="M {A[0]:g} {A[1]:g} L {B[0]:g} {B[1]:g}" fill="none" stroke="{MUTED}" stroke-width="0.8"/>'
         for q in (a, b):
-            t0 = iso(q[0] - tk[0], q[1] - tk[1], 0, OX, OY)
-            t1 = iso(q[0] + tk[0], q[1] + tk[1], 0, OX, OY)
+            t0 = self.pt(q[0] - tk[0], q[1] - tk[1], z)
+            t1 = self.pt(q[0] + tk[0], q[1] + tk[1], z)
             out += f'<path d="M {t0[0]:g} {t0[1]:g} L {t1[0]:g} {t1[1]:g}" fill="none" stroke="{MUTED}" stroke-width="0.8"/>'
         mx, my = (A[0] + B[0]) / 2, (A[1] + B[1]) / 2
         w = r4(len(label) * 9 * 0.62 + 12)
@@ -463,44 +490,159 @@ def planta():
                 f'<text x="{mx:g}" y="{my + 4:g}" fill="{SOFT}" font-size="9" font-family="{FM}" text-anchor="middle" letter-spacing="0.06em">{label}</text>')
         return out
 
-    p.append(dim((0, PY + 22), (PX, PY + 22), (0, 6), "2 m"))
-    p.append(dim((PX + 22, 0), (PX + 22, PY), (6, 0), "2,5 m"))
+    def tags(self, tags):
+        """tags: (nome, sublabel, ponto de modelo, deslocamento em tela, focal)."""
+        out, placed = [], []
+        for name, sub, (mx, my, mz), (dx, dy), focal in tags:
+            sx, sy = self.pt(mx, my, mz)
+            sx, sy = sx + dx, sy + dy
+            w = r4(max(len(name) * 12 * 0.6, len(sub) * 8 * 0.62) + 16)
+            rx, ry = sx - w / 2, sy - 16
+            assert rx >= 8 and rx + w <= self.w - 8 and ry >= 8, f"etiqueta fora do quadro: {name}"
+            for (ax, ay, aw) in placed:
+                assert rx + w <= ax or ax + aw <= rx or ry + 32 <= ay or ay + 32 <= ry, f"etiquetas sobrepostas: {name}"
+            placed.append((rx, ry, w))
+            stroke = ACCENT if focal else ink(0.12)
+            color = ACCENT if focal else INK
+            subc = ACCENT if focal else MUTED
+            out.append(f'<g data-role="tag" data-name="{name}" data-at="{mx:g} {my:g} {mz:g}">'
+                       f'<rect x="{rx:g}" y="{ry:g}" width="{w}" height="32" rx="2" fill="{WHITE}" stroke="{stroke}" stroke-width="0.8"/>'
+                       f'<text data-role="name" x="{sx:g}" y="{sy:g}" text-anchor="middle" fill="{color}" font-size="12" font-weight="600" font-family="{FN}">{name}</text>'
+                       f'<text x="{sx:g}" y="{sy + 11:g}" text-anchor="middle" fill="{subc}" font-size="8" font-family="{FM}" letter-spacing="0.08em">{sub}</text></g>')
+        return out
 
-    tags = [
-        # (nome, sublabel, ponto de modelo, deslocamento em tela, focal)
+    def plate(self, px, py, t):
+        return (f'<g data-plate data-rect="0 0 {px} {py} 0" data-z="0" data-t="{t}">'
+                f'{self.prism(0, 0, px, py, 0, t, strong=True)}</g>')
+
+    def note(self, y, text):
+        return [f'<text x="96" y="{y}" fill="{ACCENT}" font-size="8" font-family="{FM}" letter-spacing="0.18em">MAQUETE</text>',
+                f'<text x="168" y="{y}" fill="{MUTED}" font-size="10" font-family="{FS}" font-style="italic">{text}</text>']
+
+
+def planta():
+    """Quarto PX: 2 m x 2,5 m. Escala: 150 unidades de modelo por metro."""
+    W = 1000
+    OX, OY = 480, 280
+    PX, PY = 312, 387                 # placa: interior 300 x 375 (2 m x 2,5 m) + paredes de 6
+    T = 6                             # espessura da placa
+    WH = 22                           # parede cortada na altura da mesa
+    TETO = T + 390                    # teto a 2,6 m
+    ax = Axo(OX, OY, W)
+
+    # paredes (x0, y0, x1, y1). Parede dos fundos (y=0): janela. Parede da frente (y=381..387): porta, vão de x=180 a x=300.
+    walls = [
+        (0, 0, 312, 6), (0, 6, 6, 387), (306, 6, 312, 387),
+        (6, 381, 180, 387), (300, 381, 306, 387),
+    ]
+    things = [
+        caixa("Cama", 12, 12, 140, 297, T, 8),
+        caixa("Colchão", 14, 14, 138, 295, T + 8, 10),
+        caixa("Travesseiro", 20, 18, 132, 58, T + 18, 6),
+        caixa("Cômoda", 246, 150, 306, 270, T, 30),
+        caixa("Assistente", 266, 190, 284, 208, T + 30, 10),
+        caixa("janela", 144, 1, 270, 5, T + WH, 46, estilo="vidro"),
+        caixa("Ar-condicionado", 144, 6, 270, 24, T + WH + 48, 18),
+        caixa("Interruptor", 300, 381, 306, 387, T + WH, 12),
+        caixa("Fechadura", 168, 381, 180, 387, T + WH, 14, focal=True),
+    ]
+    boxes = [caixa("parede", *w, T, WH, estilo="parede") for w in walls] + things
+
+    p = [f'<g data-axo-plan data-origin="{OX} {OY}">', ax.plate(PX, PY, T),
+         '<g data-room data-name="Quarto" data-rect="6 6 306 381 0"></g>']
+    p += ax.boxes(boxes)
+    # detector de fumaça: disco de 12 cm no centro do teto, com prumo até o piso
+    p += ax.ceiling(156, 193.5, 9, T, TETO)
+    p.append(ax.dim((0, PY + 22), (PX, PY + 22), (0, 6), "2 m"))
+    p.append(ax.dim((PX + 22, 0), (PX + 22, PY), (6, 0), "2,5 m"))
+    p += ax.tags([
         ("Cama", "solteiro", (76, 170, T + 18), (0, 0), False),
         ("Ar-condicionado", "sobre a janela", (207, 15, T + WH + 66), (-30, -22), False),
         ("Janela", "parede de 2 m", (270, 3, T + WH + 24), (70, 0), False),
         ("Porta", "fechadura com senha", (200, 340, T), (0, 0), True),
         ("Interruptor", "ao lado da porta", (303, 384, T + WH + 12), (70, 24), False),
         ("Assistente", "sobre a cômoda", (275, 199, T + 40), (90, -10), False),
-    ]
-    placed = []
-    for name, sub, (mx, my, mz), (dx, dy), focal in tags:
-        sx, sy = iso(mx, my, mz, OX, OY)
-        sx, sy = sx + dx, sy + dy
-        w = r4(max(len(name) * 12 * 0.6, len(sub) * 8 * 0.62) + 16)
-        rx, ry = sx - w / 2, sy - 16
-        assert rx >= 8 and rx + w <= W - 8, f"etiqueta fora do quadro: {name}"
-        for (ax, ay, aw) in placed:
-            assert rx + w <= ax or ax + aw <= rx or ry + 32 <= ay or ay + 32 <= ry, f"etiquetas sobrepostas: {name}"
-        placed.append((rx, ry, w))
-        stroke = ACCENT if focal else ink(0.12)
-        color = ACCENT if focal else INK
-        subc = ACCENT if focal else MUTED
-        p.append(f'<g data-role="tag" data-name="{name}" data-at="{mx} {my} {mz}">'
-                 f'<rect x="{rx:g}" y="{ry:g}" width="{w}" height="32" rx="2" fill="{WHITE}" stroke="{stroke}" stroke-width="0.8"/>'
-                 f'<text data-role="name" x="{sx:g}" y="{sy:g}" text-anchor="middle" fill="{color}" font-size="12" font-weight="600" font-family="{FN}">{name}</text>'
-                 f'<text x="{sx:g}" y="{sy + 11:g}" text-anchor="middle" fill="{subc}" font-size="8" font-family="{FM}" letter-spacing="0.08em">{sub}</text></g>')
+        ("Detector de fumaça", "no teto, a 2,6 m", (156, 193.5, TETO - 3), (112, 4), False),
+    ])
     p.append("</g>")
-    ny = 500
-    p.append(f'<text x="96" y="{ny}" fill="{ACCENT}" font-size="8" font-family="{FM}" letter-spacing="0.18em">MAQUETE</text>')
-    p.append(f'<text x="168" y="{ny}" fill="{MUTED}" font-size="10" font-family="{FS}" font-style="italic">'
-             f'Medidas aproximadas. A luz fica no teto e não aparece: as paredes estão cortadas na altura da mesa.</text>')
+    p += ax.note(680, "Medidas aproximadas. O teto não aparece: as paredes estão cortadas na altura da mesa. "
+                      "A luz e o detector de fumaça ficam no teto.")
     page("planta-quarto", "Maquete axonométrica · Quarto PX", "Quarto PX: 2 × 2,5 m",
          "Maquete do quarto PX com 2 por 2,5 metros: cama de solteiro, janela com ar-condicionado em cima na parede dos fundos, "
-         "porta com fechadura na parede oposta, cômoda com o assistente de voz e interruptor ao lado da porta.",
-         W, 524, p)
+         "porta com fechadura na parede oposta, cômoda com o assistente de voz, interruptor ao lado da porta "
+         "e detector de fumaça no centro do teto.",
+         W, 704, p)
+
+
+def planta_banheiro():
+    """Banheiro comunitário: 6 m x 2,4 m. Escala: 100 unidades de modelo por metro."""
+    W = 1000
+    OX, OY = 320, 228
+    PX, PY = 612, 252                 # placa: interior 600 x 240 (6 m x 2,4 m) + paredes de 6
+    T, WH = 6, 22
+    TETO = T + 260                    # teto a 2,6 m
+    FUNDO = 126                       # boxes de 1,2 m junto à parede dos fundos; o resto é corredor
+    PORTA = (151, 231)                # vão de 80 cm na parede da direita (2,4 m), no corredor
+    ax = Axo(OX, OY, W)
+    bw = 600 / 7                      # 7 boxes de ~0,85 m em 6 m
+    xs = [6 + bw * k for k in range(8)]
+    CHUVEIROS, VASOS = range(0, 4), range(4, 7)   # chuveiros no fundo à esquerda, vasos perto da entrada
+
+    walls = [
+        (0, 0, PX, 6), (0, 6, 6, PY),
+        (606, 6, PX, PORTA[0]), (606, PORTA[1], PX, PY),
+        (6, PY - 6, 606, PY),
+    ]
+    boxes = [caixa("parede", *w, T, WH, estilo="parede") for w in walls]
+    # divisórias entre os boxes (3 cm), cortadas na mesma altura das paredes
+    for x in xs[1:7]:
+        boxes.append(caixa("divisória", x - 1.5, 6, x + 1.5, FUNDO, T, WH, estilo="parede"))
+    for k in range(7):
+        x0 = xs[k] + (1.5 if k else 0)
+        x1 = xs[k + 1] - (1.5 if k < 6 else 0)
+        cx = (xs[k] + xs[k + 1]) / 2
+        boxes.append(caixa("porta do box", x0, FUNDO - 4, x1, FUNDO, T, WH, estilo="vidro"))
+        if k in VASOS:   # vaso: caixa acoplada + bacia
+            boxes.append(caixa("caixa acoplada", cx - 18, 6, cx + 18, 22, T, 76))
+            boxes.append(caixa("vaso", cx - 16, 22, cx + 16, 68, T, 40))
+        else:            # chuveiro: cano na parede, válvula solenoide no cano, braço e ducha; fechadura na porta
+            boxes.append(caixa("cano", cx - 2, 6, cx + 2, 10, T, 110))
+            boxes.append(caixa("válvula", cx - 6, 6, cx + 6, 16, T + 110, 14))
+            boxes.append(caixa("cano", cx - 2, 6, cx + 2, 10, T + 124, 80))
+            boxes.append(caixa("braço", cx - 2, 10, cx + 2, 16, T + 200, 4))
+            boxes.append(caixa("ducha", cx - 9, 16, cx + 9, 34, T + 198, 4, estilo="redondo"))
+            boxes.append(caixa("fechadura", x1 - 14, FUNDO - 4, x1 - 6, FUNDO, T + WH, 12, focal=True))
+
+    p = [f'<g data-axo-plan data-origin="{OX} {OY}">', ax.plate(PX, PY, T)]
+    # piso do chuveiro: marca plana em cada box de chuveiro
+    for k in CHUVEIROS:
+        a, b = xs[k] + 6, xs[k + 1] - 6
+        pts = [ax.P(a, 12, T), ax.P(b, 12, T), ax.P(b, FUNDO - 10, T), ax.P(a, FUNDO - 10, T)]
+        p.append(f'<path d="{ax.poly(pts)}" fill="{ink(0.07)}"/>')
+    p.append(f'<g data-room data-name="Boxes de chuveiro" data-rect="6 6 {xs[4]:g} {FUNDO} 0"></g>')
+    p.append(f'<g data-room data-name="Boxes de vaso" data-rect="{xs[4]:g} 6 606 {FUNDO} 0"></g>')
+    p.append(f'<g data-room data-name="Corredor" data-rect="6 {FUNDO} 606 {PY - 6} 0"></g>')
+    p += ax.boxes(boxes)
+    DX, DY = 510, 186                 # detector de 12 cm no teto do corredor, entre os chuveiros e os vasos
+    p += ax.ceiling(DX, DY, 6, T, TETO)
+    p.append(ax.dim((0, PY + 22), (PX, PY + 22), (0, 6), "6 m"))
+    p.append(ax.dim((PX + 22, 0), (PX + 22, PY), (6, 0), "2,4 m"))
+    p += ax.tags([
+        ("Válvula solenoide Zigbee", "com timer, 1 por chuveiro", ((xs[0] + xs[1]) / 2, 11, T + 117), (-114, 0), False),
+        ("4 boxes de chuveiro", "1,2 × 0,85 m cada", ((xs[0] + xs[4]) / 2, 186, T), (0, 0), False),
+        ("Fechadura (a definir)", "1 por box de chuveiro", (xs[4] - 11.5, FUNDO - 2, T + WH + 12), (0, 50), True),
+        ("3 boxes de vaso", "sem fechadura controlada", ((xs[6] + xs[7]) / 2, 14, T + 76), (31, -62), False),
+        ("Detector de fumaça", "no teto, a 2,6 m", (DX, DY, TETO - 3), (94, -15), False),
+        ("Entrada", "porta do corredor", (609, sum(PORTA) / 2, T), (-70, 0), False),
+    ])
+    p.append("</g>")
+    p += ax.note(732, "Medidas aproximadas. O teto não aparece: as paredes e as divisórias estão cortadas na altura da mesa.")
+    page("planta-banheiro", "Maquete axonométrica · Quarto PX", "Banheiro comunitário: 6 × 2,4 m",
+         "Maquete do banheiro comunitário, 6 m × 2,4 m, boxes de 1,2 m × 0,85 m: 4 boxes de chuveiro de um lado e 3 boxes de vaso "
+         "do outro, em fileira ao longo de uma parede de 6 m, com corredor de 1,2 m. Cada box de chuveiro tem fechadura na porta, "
+         "que libera a entrada do motorista, e válvula solenoide Zigbee com timer, que libera a água só durante o banho. "
+         "A entrada fica numa parede de 2,4 m, sem controle de acesso, e um detector de fumaça fica no teto do corredor.",
+         W, 756, p)
 
 
 if __name__ == "__main__":
@@ -508,4 +650,5 @@ if __name__ == "__main__":
     fluxo_senha()
     rele_interruptores()
     planta()
+    planta_banheiro()
     print("ok:", ", ".join(sorted(f.name for f in OUT.glob("*.html"))))
