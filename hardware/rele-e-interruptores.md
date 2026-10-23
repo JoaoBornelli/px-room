@@ -4,8 +4,6 @@
 
 Cada quarto tem 1 ponto de luz e 1 interruptor. Um relé Zigbee comercial fica na caixa da parede e liga a luz. O interruptor de parede se liga à entrada do relé. A central de automação envia comandos ao relé pela mesh Zigbee → [hub-automacao.md](hub-automacao.md).
 
-> **Nota:** o diagrama `diagramas/rele-interruptores.svg` mostra a abordagem anterior, com um módulo relé central com fio. O diagrama precisa ser refeito.
-
 ## Requisitos do relé
 
 | Requisito | Valor | Por quê |

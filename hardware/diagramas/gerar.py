@@ -228,66 +228,85 @@ def legend(y, w, kinds, arrows):
 # ---------- 1. visão geral ----------
 
 def visao_geral():
-    W, H = 960, 632
+    W, H = 960, 648
     A, B, C = 64, 400, 736          # colunas (x da caixa), largura 160
     NW, NH = 160, 56
-    R1, R2, R3, R4 = 96, 216, 360, 472
+    R1, R2, R3, R4 = 96, 216, 344, 480
     p = []
     p.append(zone(376, 64, 544, 112, "NUVEM"))
-    p.append(zone(40, 328, 880, 224, "QUARTO"))
-    # setas antes das caixas
+    p.append(zone(40, 312, 880, 256, "LOCAL (UNIDADE)"))
+    p.append(zone(40, 448, 664, 104, "QUARTO · MESH ZIGBEE"))
+    p.append(zone(720, 448, 200, 104, "BANHEIRO"))
+    # nuvem
     p.append(arrow(f"M {A + NW},{R1 + 28} H {B}"))
     p.append(label_above((A + NW + B) / 2, R1 + 28, "TROCA PREVISTA"))
     p.append(arrow(f"M {B + NW},{R1 + 28} H {C}", LINK))
-    p.append(label_above((B + NW + C) / 2, R1 + 28, "CRIA SENHA"))
-    p.append(arrow(f"M 452,{R1 + NH} V {R2 + 20} Q 452,{R2 + 28} 444,{R2 + 28} H {A + NW}"))
-    p.append(label_above(334, R2 + 28, "SENHA + QUARTO"))
-    p.append(arrow(f"M 508,{R1 + NH} V {R3}", dashed=True))
-    p.append(label_right(508, 296, "COMANDO?"))
-    p.append(arrow(f"M {C + 80},{R1 + NH} V {R3}", LINK))
-    p.append(label_right(C + 80, 296, "SINCRONIZA"))
-    p.append(arrow(f"M {B},{R3 + 28} H {A + NW}", dashed=True))
-    p.append(label_above((A + NW + B) / 2, R3 + 28, "EVENTO?"))
-    p.append(arrow(f"M {B + 80},{R3 + NH} V {R4}"))
-    p.append(label_right(B + 80, (R3 + NH + R4) / 2, "PROTOCOLO"))
-    p.append(arrow(f"M {B + NW},{R4 + 28} H {C}"))
-    p.append(label_above((B + NW + C) / 2, R4 + 28, "127/220 V"))
+    p.append(label_above((B + NW + C) / 2, R1 + 28, "PEDE SENHA"))
+    p.append(arrow(f"M 440,{R1 + NH} V {R2 + 20} Q 440,{R2 + 28} 432,{R2 + 28} H {A + NW}"))
+    p.append(label_above(328, R2 + 28, "SENHA + QUARTO"))
+    p.append(arrow(f"M {B + 80},{R1 + NH} V {R3}"))
+    p.append(label_right(B + 80 - 16 - label_w("INTERNET"), 296, "INTERNET"))
+    # app → fechadura (o motorista digita a senha)
+    p.append(arrow(f"M {A + 80},{R2 + NH} V {R3}", dashed=True))
+    p.append(label_right(A + 80, 288, "DIGITA A SENHA"))
+    # voz (fase 2) → central
+    p.append(arrow(f"M {C},{R2 + 28} H 528 V {R3}", dashed=True))
+    p.append(label_above((528 + C) / 2, R2 + 28, "WI-FI"))
+    # central → coordenador → mesh
+    p.append(arrow(f"M {B + NW},{R3 + 28} H {C}"))
+    p.append(label_above((B + NW + C) / 2, R3 + 28, "ETHERNET / PoE"))
+    bus = R3 + NH + 24
+    drops = [A + 80, 368, 592, C + 80]
+    p.append(f'<path d="M {C + 80},{R3 + NH} V {bus} H {drops[0]}" fill="none" stroke="{MUTED}" stroke-width="1.2"/>')
+    for x in drops:
+        p.append(arrow(f"M {x},{bus} V {R4}"))
+    p.append(label_above(480, bus, "MESH ZIGBEE"))
     # caixas
     p.append(node(A, R1, NW, NH, "external", "EXT", "Contrato e rota", "define a troca"))
     p.append(node(B, R1, NW, NH, "backend", "API", "Torre PX", "pré-reserva → senha"))
-    p.append(node(C, R1, NW, NH, "external", "EXT", "API Intelbras", "senha temporária"))
+    p.append(node(C, R1, NW, NH, "external", "EXT", "API da fechadura", "marca a definir"))
     p.append(node(A, R2, NW, NH, "input", "APP", "App do motorista", "senha + info"))
-    p.append(node(A, R3, NW, NH, "device", "DEV", "Assistente de voz", "boas-vindas"))
-    p.append(node(B, R3, NW, NH, "focal", "HUB", "Hub de automação", "MCA, em avaliação"))
-    p.append(node(C, R3, NW, NH, "focal", "LOCK", "Fechadura", "senha no teclado"))
-    p.append(node(B, R4, NW, NH, "backend", "IO", "Módulo relé", "entradas + saídas"))
-    p.append(node(C, R4, NW, NH, "device", "DEV", "Lâmpadas", "convencionais"))
-    p += legend(584, W, ["focal", "backend", "external", "input", "device"], [(LINK, False, "API"), (MUTED, True, "A CONFIRMAR")])
-    page("visao-geral", "Arquitetura · Quarto PX", "Quarto PX: visão geral do hardware",
-         "Visão geral do quarto PX: a Torre PX pré-reserva o quarto a partir do contrato, cria a senha pela API Intelbras e a envia ao app do motorista; "
-         "no quarto, o hub de automação aciona o assistente de voz e o módulo relé, que liga as lâmpadas.",
+    p.append(node(C, R2, NW, NH, "optional", "VOZ", "Assistente de voz", "fase 2 · ESP32-S3"))
+    p.append(node(A, R3, NW, NH, "focal", "LOCK", "Fechadura do quarto", "fora da Zigbee · offline"))
+    p.append(node(B, R3, NW, NH, "focal", "HUB", "Central do local", "MQTT · Zigbee2MQTT"))
+    p.append(node(C, R3, NW, NH, "device", "ZB", "Coordenador Zigbee", "de rede"))
+    p.append(node(A, R4, NW, NH, "device", "ZB", "Relé de parede", "roteador + interruptor"))
+    p.append(node(288, R4, NW, NH, "device", "ZB", "Sensor de porta", "bateria"))
+    p.append(node(512, R4, NW, NH, "device", "ZB", "Emissor IR", "ar-condicionado"))
+    p.append(node(C, R4, NW, NH, "device", "ZB", "Válvula do chuveiro", "NF · timer"))
+    p += legend(600, W, ["focal", "backend", "external", "input", "device", "optional"],
+                [(LINK, False, "API")])
+    page("visao-geral", "Arquitetura · Quarto PX", "Quarto PX: central do local e mesh Zigbee",
+         "Arquitetura do quarto PX: a Torre PX pré-reserva o quarto, pede a senha offline à API da fechadura (marca a definir) e a envia ao app; "
+         "o motorista digita a senha na fechadura, que fica fora da rede Zigbee. A central do local fala com a Torre e, pelo coordenador Zigbee, "
+         "com a mesh do quarto (relé de parede, sensor de porta, emissor infravermelho) e do banheiro (válvula do chuveiro). O assistente de voz é opcional, fase 2.",
          W, H, p)
 
 
 # ---------- 2. fluxo da senha (sequência) ----------
 
+def frag(fx, fy, fw, fh, tag, text):
+    tw = 8 + len(tag) * 8
+    return [f'<rect x="{fx}" y="{fy}" width="{fw}" height="{fh}" rx="4" fill="{ink(0.02)}" stroke="{ink(0.22)}" stroke-width="1"/>',
+            f'<rect x="{fx}" y="{fy}" width="{tw}" height="16" rx="2" fill="{PAPER}" stroke="{ink(0.22)}" stroke-width="1"/>',
+            f'<text x="{fx + tw / 2:g}" y="{fy + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" text-anchor="middle" letter-spacing="0.12em">{tag}</text>',
+            f'<text x="{fx + tw + 12}" y="{fy + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" letter-spacing="0.04em">{text}</text>']
+
+
 def fluxo_senha():
-    W, H = 960, 736
-    X = [96, 288, 480, 672, 864]
-    names = [("EXT", "Contrato e rota", "external"), ("API", "Torre PX", "backend"),
-             ("EXT", "API Intelbras", "external"), ("LOCK", "Fechadura", "focal"),
-             ("APP", "Motorista (app)", "input")]
-    BW, BH, TOP = 152, 48, 48
-    BOTTOM = 672
+    W, H = 1100, 852
+    X = [90, 238, 386, 534, 682, 830, 978]
+    names = [("EXT", "Contrato e rota", "external", ""), ("API", "Torre PX", "backend", ""),
+             ("EXT", "API da fechadura", "external", "marca a definir"), ("APP", "Motorista (app)", "input", ""),
+             ("LOCK", "Fechadura", "focal", "offline"), ("HUB", "Central do local", "backend", ""),
+             ("ZB", "Sensor de porta", "device", "")]
+    BW, BH, TOP = 128, 48, 48
+    BOTTOM = 776
     p = []
     for x in X:
         p.append(f'<line x1="{x}" y1="{TOP + BH}" x2="{x}" y2="{BOTTOM}" stroke="{ink(0.20)}" stroke-width="1" stroke-dasharray="3,3"/>')
-    # fragmento opt (desenhado antes das mensagens)
-    fx, fy, fw, fh = 40, 536, 496, 112
-    p.append(f'<rect x="{fx}" y="{fy}" width="{fw}" height="{fh}" rx="4" fill="{ink(0.02)}" stroke="{ink(0.22)}" stroke-width="1"/>')
-    p.append(f'<rect x="{fx}" y="{fy}" width="40" height="16" rx="2" fill="{PAPER}" stroke="{ink(0.22)}" stroke-width="1"/>')
-    p.append(f'<text x="{fx + 20}" y="{fy + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" text-anchor="middle" letter-spacing="0.12em">OPT</text>')
-    p.append(f'<text x="{fx + 52}" y="{fy + 12}" fill="{MUTED}" font-size="8" font-family="{FM}" letter-spacing="0.04em">[troca cancelada]</text>')
+    p += frag(40, 484, 1020, 156, "PAR", "[em paralelo: o sensor de porta avisa a central]")
+    p += frag(40, 664, 420, 104, "OPT", "[troca cancelada · só com gateway]")
 
     def msg(a, b, y, text, color=MUTED, dashed=False, marker=None, lx=None):
         x1, x2 = X[a], X[b]
@@ -295,63 +314,76 @@ def fluxo_senha():
         p.append(arrow(f"M {x1},{y} H {end}", color, dashed, marker))
         p.append(label_above(lx if lx is not None else (x1 + x2) / 2, y, text))
 
-    msg(0, 1, 160, "TROCA PREVISTA")
-    msg(1, 2, 208, "CRIA SENHA", LINK)
-    msg(2, 1, 248, "SENHA CRIADA", dashed=True)
-    msg(2, 3, 296, "SINCRONIZA", dashed=True, marker="arrow-open")
-    msg(1, 4, 344, "SENHA + QUARTO", ACCENT, lx=576)
-    msg(4, 3, 400, "DIGITA SENHA")
-    msg(3, 4, 440, "DESTRAVA", dashed=True)
-    # auto-mensagem: a senha expira no check-out
-    sx, sy = X[3], 480
-    p.append(f'<path d="M {sx},{sy} H {sx + 24} Q {sx + 32},{sy} {sx + 32},{sy + 8} V {sy + 16} Q {sx + 32},{sy + 24} {sx + 24},{sy + 24} H {sx + 2}" '
-             f'fill="none" stroke="{MUTED}" stroke-width="1.2" marker-end="url(#arrow)"/>')
-    w = label_w("EXPIRA NO FIM")
-    p.append(f'<rect x="{sx + 40}" y="{sy + 6}" width="{w}" height="12" rx="2" fill="{PAPER}"/>'
-             f'<text x="{sx + 40 + w / 2:g}" y="{sy + 15}" fill="{SOFT}" font-size="8" font-family="{FM}" text-anchor="middle" letter-spacing="0.06em">EXPIRA NO FIM</text>')
-    msg(0, 1, 592, "CANCELA TROCA")
-    msg(1, 2, 628, "REVOGA SENHA", LINK)
-    # atores por último
-    for x, (tag, name, kind) in zip(X, names):
-        p.append(node(x - BW // 2, TOP, BW, BH, kind, tag, name, ""))
-    p += legend(696, W, ["focal", "backend", "external", "input"],
-                [(LINK, False, "API"), (MUTED, True, "RESPOSTA"), (MUTED, True, "ASSÍNCRONO", "arrow-open")])
+    def selfmsg(a, sy, text):
+        sx = X[a]
+        p.append(f'<path d="M {sx},{sy} H {sx + 24} Q {sx + 32},{sy} {sx + 32},{sy + 8} V {sy + 16} Q {sx + 32},{sy + 24} {sx + 24},{sy + 24} H {sx + 2}" '
+                 f'fill="none" stroke="{MUTED}" stroke-width="1.2" marker-end="url(#arrow)"/>')
+        w = label_w(text)
+        p.append(f'<rect x="{sx + 40}" y="{sy + 6}" width="{w}" height="12" rx="2" fill="{PAPER}"/>'
+                 f'<text x="{sx + 40 + w / 2:g}" y="{sy + 15}" fill="{SOFT}" font-size="8" font-family="{FM}" text-anchor="middle" letter-spacing="0.06em">{text}</text>')
+
+    msg(0, 1, 140, "TROCA PREVISTA")
+    selfmsg(1, 176, "PRÉ-RESERVA")
+    msg(1, 2, 236, "PEDE SENHA", LINK)
+    msg(2, 1, 272, "SENHA", dashed=True)
+    msg(1, 3, 320, "SENHA + QUARTO", ACCENT)
+    msg(3, 4, 368, "DIGITA SENHA")
+    selfmsg(4, 400, "VALIDA OFFLINE")
+    msg(4, 3, 452, "DESTRAVA", dashed=True)
+    msg(6, 5, 528, "PORTA ABERTA", ACCENT)
+    selfmsg(5, 556, "LIGA A LUZ")
+    msg(5, 1, 616, "REGISTRA ENTRADA", dashed=True)
+    msg(0, 1, 712, "CANCELA TROCA")
+    msg(1, 2, 748, "REVOGA SENHA", LINK)
+    for x, (tag, name, kind, sub) in zip(X, names):
+        p.append(node(x - BW // 2, TOP, BW, BH, kind, tag, name, sub))
+    p += legend(800, W, ["focal", "backend", "external", "input", "device"],
+                [(LINK, False, "API"), (MUTED, True, "RESPOSTA / REGISTRO")])
     page("fluxo-senha", "Sequência · Quarto PX", "Quarto PX: da reserva à porta aberta",
-         "Sequência da senha do quarto: o contrato prevê a troca, a Torre PX pré-reserva o quarto, cria a senha pela API Intelbras e a envia ao app; "
-         "o motorista digita a senha, a fechadura destrava, e a senha expira no fim da reserva ou é revogada se a troca for cancelada.",
+         "Sequência da senha do quarto: o contrato prevê a troca, a Torre PX pré-reserva o quarto, pede a senha offline à API da fechadura (marca a definir) "
+         "e a envia ao app. O motorista digita a senha, e a fechadura valida sem rede e abre. Em paralelo, o sensor de porta avisa a central do local, "
+         "que liga a luz e registra a entrada na Torre. Se a troca é cancelada, a Torre revoga a senha, desde que exista gateway.",
          W, H, p)
 
 
 # ---------- 3. relé e interruptores ----------
 
 def rele_interruptores():
-    W, H = 960, 576
+    W, H = 960, 560
     A, B, C = 48, 400, 752
     NW, NH = 160, 56
     R1, R2, R3 = 96, 264, 408
     p = []
-    p.append(zone(24, 232, 208, 256, "BAIXA TENSÃO"))
     p.append(zone(728, 232, 208, 256, "127/220 V"))
-    p.append(arrow(f"M {A + 80},{R3} V {R2 + NH}"))
-    p.append(label_right(A + 80, (R2 + NH + R3) / 2, "12/24 V DC"))
-    p.append(arrow(f"M {A + NW},{R2 + 28} H {B}"))
-    p.append(label_above((A + NW + B) / 2, R2 + 28, "SINAL DIGITAL"))
+    # linha 1: sensor → coordenador ⇄ central
+    p.append(arrow(f"M {A + NW},{R1 + 28} H {B}"))
+    p.append(label_above((A + NW + B) / 2, R1 + 28, "PORTA ABERTA"))
+    p.append(arrow(f"M {C},{R1 + 16} H {B + NW}"))
+    p.append(label_above((B + NW + C) / 2, R1 + 16, "EVENTO"))
+    p.append(arrow(f"M {B + NW},{R1 + 44} H {C}"))
+    p.append(label_above((B + NW + C) / 2, R1 + 44, "COMANDO"))
+    # coordenador → relé pela mesh
     p.append(arrow(f"M {B + 80},{R1 + NH} V {R2}", dashed=True))
-    p.append(label_right(B + 80, (R1 + NH + R2) / 2, "PROTOCOLO"))
-    p.append(arrow(f"M {B + NW},{R2 + 28} H {C}", ACCENT, marker="arrow-accent"))
+    p.append(label_right(B + 80, (R1 + NH + R2) / 2, "MESH ZIGBEE"))
+    # interruptor → relé (local, sem a central)
+    p.append(arrow(f"M {A + NW},{R2 + 28} H {B}", LINK))
+    p.append(label_above((A + NW + B) / 2, R2 + 28, "LOCAL, SEM A CENTRAL"))
+    p.append(arrow(f"M {B + NW},{R2 + 28} H {C}", ACCENT))
     p.append(label_above((B + NW + C) / 2, R2 + 28, "LIGA / DESLIGA"))
     p.append(arrow(f"M {C},{R3 + 28} H {B + 88} Q {B + 80},{R3 + 28} {B + 80},{R3 + 20} V {R2 + NH}"))
-    p.append(label_above((B + 88 + C) / 2, R3 + 28, "FASE"))
-    p.append(node(B, R1, NW, NH, "optional", "HUB", "Hub de automação", "MCA ou HA?"))
-    p.append(node(A, R2, NW, NH, "input", "IN", "Interruptores", "pulsador na parede"))
-    p.append(node(B, R2, NW, NH, "focal", "IO", "Módulo relé", "entradas + saídas"))
-    p.append(node(C, R2, NW, NH, "device", "DEV", "Lâmpadas", "circuitos de luz"))
-    p.append(node(A, R3, NW, NH, "device", "PSU", "Fonte", "12/24 V DC?"))
+    p.append(label_above((B + 88 + C) / 2, R3 + 28, "FASE E NEUTRO?"))
+    p.append(node(A, R1, NW, NH, "device", "ZB", "Sensor de porta", "bateria"))
+    p.append(node(B, R1, NW, NH, "device", "ZB", "Coordenador Zigbee", "de rede"))
+    p.append(node(C, R1, NW, NH, "backend", "HUB", "Central do local", "Zigbee2MQTT + regras"))
+    p.append(node(A, R2, NW, NH, "input", "IN", "Interruptor", "pulsador ou chave?"))
+    p.append(node(B, R2, NW, NH, "focal", "ZB", "Relé Zigbee de parede", "roteador + entrada"))
+    p.append(node(C, R2, NW, NH, "device", "DEV", "Lâmpada", "ponto de luz"))
     p.append(node(C, R3, NW, NH, "external", "AC", "Rede elétrica", "disjuntor"))
-    p += legend(528, W, ["focal", "input", "device", "external", "optional"], [(MUTED, True, "A CONFIRMAR")])
-    page("rele-interruptores", "Arquitetura · Quarto PX", "Quarto PX: módulo relé e interruptores",
-         "O interruptor de baixa tensão envia um sinal digital ao módulo relé central, que também aceita comandos do hub por protocolo "
-         "e chaveia a fase da rede elétrica para as lâmpadas convencionais.",
+    p += legend(512, W, ["focal", "backend", "input", "device", "external"],
+                [(LINK, False, "SINAL LOCAL"), (MUTED, True, "ZIGBEE")])
+    page("rele-interruptores", "Arquitetura · Quarto PX", "Quarto PX: relé Zigbee e interruptor",
+         "O interruptor liga na entrada do relé Zigbee de parede e aciona a luz sem a central. A central do local também comanda o relé pela mesh Zigbee, "
+         "por meio do coordenador. Quando o sensor de porta abre, o evento chega à central, que liga a luz pelo relé. O relé chaveia a fase da rede elétrica para a lâmpada.",
          W, H, p)
 
 

@@ -6,8 +6,6 @@ A fechadura inteligente é obrigatória. O sistema PX pré-reserva o quarto a pa
 
 A fechadura fica fora da rede Zigbee → [ADR 0001](../ADRs/0001-central-zigbee-por-local.md). O critério principal de escolha é a senha offline por algoritmo, e não o protocolo de rede.
 
-> **Nota:** o diagrama `diagramas/fluxo-senha.svg` ainda mostra a API Intelbras. O diagrama precisa ser refeito quando a marca for escolhida.
-
 ![Fluxo da senha, da reserva à porta aberta](diagramas/fluxo-senha.svg)
 
 ## Senha offline por algoritmo

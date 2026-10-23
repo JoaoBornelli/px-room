@@ -18,8 +18,6 @@ O fluxo completo está no [README principal](../README.md#fluxo-de-uso-proposta)
 
 Cada local tem uma central (mini PC) com Zigbee2MQTT. Os dispositivos dos quartos e do banheiro são Zigbee comerciais, em mesh. A fechadura do quarto fica fora da rede. A decisão está na [ADR 0001](../ADRs/0001-central-zigbee-por-local.md), e o detalhe em [hub-automacao.md](hub-automacao.md).
 
-> **Nota:** o diagrama abaixo ainda mostra a arquitetura anterior, com o hub Intelbras MCA. O diagrama precisa ser refeito.
-
 ![Visão geral do hardware do quarto PX](diagramas/visao-geral.svg)
 
 ## O quarto

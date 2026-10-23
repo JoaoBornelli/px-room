@@ -9,9 +9,9 @@ O script `gerar.py` gera os cinco `.html`. Para mudar um diagrama, edite o `gera
 
 | Diagrama | Tipo | Usado em |
 |---|---|---|
-| `visao-geral` | Arquitetura | [../../README.md](../../README.md), [../README.md](../README.md) |
-| `fluxo-senha` | Sequência | [../fechadura.md](../fechadura.md) |
-| `rele-interruptores` | Arquitetura | [../rele-e-interruptores.md](../rele-e-interruptores.md) |
+| `visao-geral` | Arquitetura (central do local, mesh Zigbee, fechadura fora da mesh) | [../../README.md](../../README.md), [../README.md](../README.md) |
+| `fluxo-senha` | Sequência (senha offline e entrada no quarto) | [../fechadura.md](../fechadura.md) |
+| `rele-interruptores` | Arquitetura (relé Zigbee de parede e interruptor) | [../rele-e-interruptores.md](../rele-e-interruptores.md) |
 | `planta-quarto` | Maquete axonométrica do quarto (2 × 2,5 m) | [../../README.md](../../README.md), [../README.md](../README.md) |
 | `planta-banheiro` | Maquete axonométrica do banheiro comunitário (6 × 2,4 m) | [../banheiro.md](../banheiro.md) |
 
