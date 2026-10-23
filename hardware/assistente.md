@@ -1,8 +1,8 @@
 # Assistente de voz
 
-> Estado: 🟡 investigando · [← painel do hardware](README.md)
+> Estado: ⚪ fase 2 · [← painel do hardware](README.md)
 
-O assistente fala com o motorista dentro do quarto. O desenvolvimento é interno, provavelmente.
+O assistente fala com o motorista dentro do quarto. O assistente é um extra. O quarto funciona completo sem ele. O trabalho começa depois da parte elétrica.
 
 ## O que o assistente faz
 
@@ -10,17 +10,32 @@ O assistente fala com o motorista dentro do quarto. O desenvolvimento é interno
 2. O assistente explica o funcionamento do quarto.
 3. O assistente informa o banho, o contrato e as regras.
 
+## Direção proposta
+
+Um satélite de voz por quarto, separado da parte elétrica → [ADR 0001](../ADRs/0001-central-zigbee-por-local.md).
+
+- O satélite é um ESP32-S3 com microfone e alto-falante, ligado por Wi-Fi.
+- A wake word roda no satélite (microWakeWord). O áudio só sai do quarto depois da wake word.
+- A central do local faz o STT (faster_whisper) e o TTS (Kokoro).
+- As falas fixas, como as boas-vindas, ficam em cache na central.
+- O evento "porta aberta" do sensor Zigbee inicia as boas-vindas. Esta fala não precisa de wake word.
+
+| Candidato | Rede | O que tem | Preço |
+|---|---|---|---|
+| M5Stack Atom VoiceS3R | Wi-Fi | ESP32-S3, microfone, alto-falante de 1 W, emissor IR | a confirmar |
+| FutureProofHomes Satellite1 | Wi-Fi | ESP32-S3 + XMOS, 4 microfones | cerca de US$ 80 no lançamento (2025) |
+| Montagem própria | Wi-Fi | ESP32-S3 + INMP441 + MAX98357A | baixo em peças, alto em montagem |
+
 ## Perguntas
 
-1. Qual hardware fica em cada quarto: só alto-falante e microfone, com o processamento no mini PC central, ou um computador pequeno por quarto? Um computador por quarto fica caro para 20 quartos → [hub-automacao.md](hub-automacao.md#processamento-central-hipótese).
-2. O assistente só fala, ou também recebe comandos de voz? Se recebe, precisa de palavra de ativação (wake word) em pt-BR.
-3. O processamento da voz é local ou na nuvem?
-4. Qual evento inicia as boas-vindas: o evento "porta aberta" da fechadura ou um sensor de presença?
-5. Quais informações vêm da Torre: nome do motorista, contrato, direito ao banho?
-6. O motorista pode desligar o assistente para dormir?
-7. Qual é o custo por quarto, para 20 quartos?
+1. O assistente só fala, ou também recebe comandos de voz?
+2. Quantos disparos falsos acontecem numa noite com o ar-condicionado ligado? Um disparo falso acorda o motorista.
+3. O microfone precisa de botão físico de mudo e de LED? O quarto é de dormir, e o áudio é dado pessoal (LGPD).
+4. A wake word "ei px" funciona no microWakeWord? O modelo atual é para o openWakeWord e precisa de um novo treino.
+5. O alto-falante de 1 W é claro o suficiente para a fala do Kokoro em pt-BR?
+6. O satélite de voz usa Wi-Fi em 2,4 GHz. Isso afeta o Zigbee → [hub-automacao.md](hub-automacao.md#coexistência-com-o-wi-fi).
 
 ## Ligação com o resto do sistema
 
-- O evento "porta aberta" chega pelo hub ou pela Torre → [hub-automacao.md](hub-automacao.md).
+- O evento "porta aberta" chega pela central → [hub-automacao.md](hub-automacao.md).
 - As informações do banho vêm do controle do banheiro → [banheiro.md](banheiro.md).

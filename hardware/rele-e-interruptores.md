@@ -1,41 +1,30 @@
-# Módulo relé e interruptores
+# Relé e interruptor
 
 > Estado: 🟡 investigando · [← painel do hardware](README.md)
 
-As lâmpadas são convencionais. Um módulo relé central liga e desliga cada circuito de luz. O módulo aceita comandos de duas fontes: entradas digitais e um protocolo de comunicação. Os interruptores de parede são de baixa tensão e enviam um sinal ao módulo. Eles não chaveiam a carga.
+Cada quarto tem 1 ponto de luz e 1 interruptor. Um relé Zigbee comercial fica na caixa da parede e liga a luz. O interruptor de parede se liga à entrada do relé. A central de automação envia comandos ao relé pela mesh Zigbee → [hub-automacao.md](hub-automacao.md).
 
-> **Atenção:** o hub em avaliação (Intelbras MCA) usa Zigbee. Esta abordagem com fio pode mudar. Veja [hub-automacao.md](hub-automacao.md#conflito-com-as-decisões-atuais).
+> **Nota:** o diagrama `diagramas/rele-interruptores.svg` mostra a abordagem anterior, com um módulo relé central com fio. O diagrama precisa ser refeito.
 
-![Módulo relé e interruptores](diagramas/rele-interruptores.svg)
+## Requisitos do relé
 
-> **Nota:** cada quarto tem só 1 ponto de luz e 1 interruptor. Um módulo relé central por quarto é provavelmente excessivo. Avaliar: um módulo central para vários quartos, ou um módulo pequeno por quarto.
-
-## Requisitos do módulo relé
-
-| Requisito | Valor | Fonte |
+| Requisito | Valor | Por quê |
 |---|---|---|
-| Número de saídas (circuitos de luz) | 1 por quarto, cerca de 20 no total | Descrição do quarto |
-| Número de entradas digitais (interruptores) | 1 por quarto, cerca de 20 no total | Descrição do quarto |
-| Protocolo de comunicação | a definir | Escolha do hub ([hub-automacao.md](hub-automacao.md)) |
-| Corrente por saída | a definir | Carga de cada circuito |
-| Montagem | a definir, ex.: trilho DIN no quadro | Instalação elétrica |
-| Interruptor funciona sem hub e sem internet | Desejável | Segurança e conforto do motorista |
-| Luz acende quando a porta abre | Obrigatório | Fluxo de uso |
+| Protocolo | Zigbee, compatível com Zigbee2MQTT | [ADR 0001](../ADRs/0001-central-zigbee-por-local.md) |
+| Saídas | 1 por quarto | 1 ponto de luz |
+| Entrada de interruptor | 1, com acionamento local | O interruptor funciona sem a central |
+| Tamanho | Cabe na caixa 4×2 atrás do interruptor | Instalação pelo eletricista, sem quadro novo |
+| Fio neutro | a confirmar na obra | Relés sem neutro funcionam pior com lâmpada LED |
+| Estado depois de queda de energia | Configurável | Evitar a luz acesa à noite depois de uma queda |
+| Roteador Zigbee | Sim | Relé ligado à rede elétrica reforça a mesh |
+| Luz acende quando a porta abre | Obrigatório | Regra na central, a partir do sensor de porta |
 
 ## Perguntas
 
-1. Cada entrada digital aciona a saída dela sem depender do hub? Este modo também se chama "standalone".
-2. O módulo volta ao último estado depois de uma queda de energia?
-3. O interruptor é um pulsador (aperta e solta) ou uma chave (liga e fica)?
-4. Quem alimenta os interruptores: a fonte do módulo ou uma fonte separada?
+1. O interruptor é um pulsador (aperta e solta) ou uma chave (liga e fica)? O relé precisa aceitar o tipo escolhido.
+2. A caixa da parede tem fio neutro?
+3. Qual relé e qual marca? Conferir a compatibilidade na lista de dispositivos do Zigbee2MQTT.
 
-## Candidatos a investigar
+## Saída com fio
 
-Nada aqui está confirmado.
-
-| Candidato | Entradas digitais | Protocolos | Notas |
-|---|---|---|---|
-| Placas ESP32 com relés (ex.: Kincony KC868) | a confirmar | a confirmar: Wi-Fi, MQTT, ESPHome | Muito usadas com o Home Assistant. |
-| Shelly Pro (trilho DIN) | a confirmar | a confirmar: Wi-Fi, LAN, API local | Caro para poucas saídas. |
-| Módulo Modbus industrial | a confirmar | Modbus RTU/TCP | Precisa de ponte para o hub. |
-| Módulos relé Zigbee da linha Casa Inteligente Intelbras | a confirmar | Zigbee | Integram no hub MCA. Verificar se aceitam interruptor de baixa tensão. |
+Se o teste piloto do Zigbee falhar, os relés vão para o quadro elétrico. Essa saída exige um fio do interruptor até o quadro. Na obra nova, peça ao eletricista esse fio de reserva → [hub-automacao.md](hub-automacao.md#coexistência-com-o-wi-fi).

@@ -13,7 +13,7 @@ O sistema PX pré-reserva o quarto a partir do contrato do motorista.
 1. O contrato e a rota indicam onde e quando a troca de motorista acontece.
 2. A Torre calcula o horário previsto da troca.
 3. A Torre pré-reserva um quarto na unidade da troca. A reserva cobre, no mínimo, 11 h de descanso.
-4. A Torre pede à API Intelbras uma senha válida só no período da reserva.
+4. A Torre gera, pela API da marca da fechadura, uma senha offline válida só no período da reserva. A marca ainda não está escolhida → [fechadura.md](../hardware/fechadura.md).
 5. A Torre envia uma notificação ao app do motorista. O app mostra a localização, o número do quarto e a senha.
 6. A Torre registra o direito a um banho grátis.
 
@@ -29,7 +29,7 @@ O Keycloak faz o login, o SSO e os papéis dos usuários. O Keycloak não faz a 
 
 | Risco | Efeito | Mitigação possível (a avaliar) |
 |---|---|---|
-| O caminhão atrasa ou adianta | A senha ainda não vale ou já venceu quando o motorista chega | Margem antes e depois do período; a Torre ajusta a senha pela posição do caminhão |
+| O caminhão atrasa ou adianta | A senha ainda não vale ou já venceu quando o motorista chega | Margem antes e depois do período; a Torre emite uma senha nova pela posição do caminhão. Revogar a senha antiga exige gateway → [fechadura.md](../hardware/fechadura.md#senha-offline-por-algoritmo) |
 | A troca é cancelada ou muda de unidade | O quarto fica reservado sem uso | A Torre cancela a reserva e a senha quando o contrato muda |
 | Muitas trocas no mesmo período | Faltam quartos | Calcular a ocupação máxima por unidade antes de definir o número de quartos |
 | O descanso termina e o motorista não sai | O próximo motorista não tem quarto | Intervalo de limpeza entre reservas e regra de saída |

@@ -1,101 +1,87 @@
-# Hub de automação
+# Central de automação (Zigbee)
 
-> Estado: 🟡 investigando · [← painel do hardware](README.md)
+> Estado: 🟢 direção decidida ([ADR 0001](../ADRs/0001-central-zigbee-por-local.md)), produtos a escolher · [← painel do hardware](README.md)
 
-O hub recebe os comandos e os envia aos dispositivos do quarto. A opção em avaliação é o hub Intelbras MCA, controlado pela API de integração da Intelbras.
+Cada local tem uma central. A central recebe os eventos dos quartos e do banheiro, aplica as regras do local e conversa com a Torre PX. Os dispositivos dos quartos e do banheiro são Zigbee comerciais, ligados em mesh.
+
+## Arquitetura
+
+```
+Torre PX (nuvem)
+   │ internet
+Central do local (mini PC)
+   ├─ broker MQTT
+   ├─ Zigbee2MQTT ◄── coordenador Zigbee de rede (Ethernet ou PoE)
+   │                     └─ mesh Zigbee
+   │                          ├─ quarto: relé de parede, sensor de porta, emissor IR
+   │                          └─ banheiro: válvula de cada chuveiro
+   └─ orquestrador: regras do local (porta aberta → luz, timer do banho)
+
+Fechadura do quarto: fora da rede Zigbee (senha offline por algoritmo) → fechadura.md
+Assistente de voz: camada separada por Wi-Fi, fase 2 → assistente.md
+```
+
+## Componentes da central
+
+| Componente | Função | Produto |
+|---|---|---|
+| Mini PC | Executa o broker, o Zigbee2MQTT e o orquestrador | a escolher |
+| Broker MQTT | Recebe e distribui os eventos e os comandos, por exemplo `quarto/<n>/porta` | Mosquitto (proposta) |
+| Zigbee2MQTT | Traduz a rede Zigbee para MQTT, sem depender de marca de dispositivo | Zigbee2MQTT |
+| Coordenador Zigbee de rede | Liga a mesh à central por Ethernet. Fica no meio do prédio, longe do mini PC se preciso | a escolher |
+| Orquestrador | Aplica as regras do local e envia os eventos à Torre | desenvolvimento interno |
+
+## Dispositivos Zigbee por quarto
+
+| Dispositivo | Função | Papel na mesh |
+|---|---|---|
+| Relé de parede com entrada de interruptor | Liga a luz. O interruptor aciona o relé sem a central | Roteador (ligado à rede elétrica) |
+| Sensor de porta | Envia o evento "porta aberta" | Dispositivo final (bateria) |
+| Emissor infravermelho | Controla o ar-condicionado | Roteador ou dispositivo final, conforme o produto |
+
+O detector de fumaça ainda não tem integração definida → [detector-fumaca.md](detector-fumaca.md).
+
+## Escala
+
+- Os relés ligados à rede elétrica roteiam as mensagens. Quartos pequenos e próximos formam uma mesh densa.
+- Um coordenador tem limite prático de dispositivos. O valor fica a medir no teste piloto. Um local grande usa um coordenador por bloco ou por andar.
+- O número de quartos aumentou e ainda não está confirmado.
+
+## Coexistência com o Wi-Fi
+
+O Zigbee e o Wi-Fi usam a faixa de 2,4 GHz. O Wi-Fi transmite com potência muito maior. Para reduzir a interferência:
+
+1. O Wi-Fi dos motoristas fica só em 5 GHz.
+2. O canal Zigbee fica fixo, escolhido por varredura de energia no local. Os candidatos são 15, 20 e 25. Evite o 20 perto de micro-ondas.
+3. Se existe Wi-Fi em 2,4 GHz, ele usa só os canais 1, 6 e 11, com 20 MHz.
+4. O coordenador fica a pelo menos 2 m de um access point.
+5. O teste piloto num bloco de quartos mede a perda de mensagens e o LQI com celulares em hotspot e com o Wi-Fi de vizinhos ligado.
+
+Saída com fio, se o teste piloto falhar: relés no quadro elétrico. Por isso, na obra nova, peça ao eletricista um fio de reserva do interruptor até o quadro.
+
+## Quando a central falha
+
+| Função | Sem a central |
+|---|---|
+| Luz pelo interruptor | Funciona: o relé aciona a luz localmente |
+| Fechadura do quarto | Funciona: a senha é validada na fechadura |
+| Luz que acende quando a porta abre | Para |
+| Timer do chuveiro | Depende de o timer rodar no próprio dispositivo → [banheiro.md](banheiro.md) |
+| Eventos para a Torre | Param. A central precisa guardar e reenviar os eventos quando voltar (a definir) |
 
 ## Opções descartadas
 
 | Opção | Motivo | Data |
 |---|---|---|
-| Alexa como hub de voz | a registrar numa ADR | 2026-10 |
+| Hub Intelbras MCA | Limite de 32 dispositivos por hub, API sem documentação pública, dependência da linha Intelbras | 2026-10-23 |
+| Hub ou computador por quarto | Custo e manutenção altos na escala nova | 2026-10-23 |
+| Placa única por quarto (ESP32 com relé e áudio) | Relé, microfone e sensor ficam em lugares diferentes. Um defeito no áudio não pode apagar a luz | 2026-10-23 |
+| Alexa como hub de voz | Descartada | 2026-10 |
 
-## Hub Intelbras MCA: o que o fabricante informa
+## Perguntas
 
-- Linha Mibo Smart (Casa Inteligente Intelbras). Configuração pelo app Mibo Smart.
-- Rede Zigbee, até 32 dispositivos por hub.
-- O MCA 1001 está descontinuado. O MCA 1002 é o modelo atual.
-- O MCA 1001 tem Wi-Fi e Ethernet (RJ45). A loja descreve o MCA 1002 só com Wi-Fi. Confirmar se o MCA 1002 tem Ethernet.
-- Segundo o guia do MCA 1001, os dispositivos Zigbee continuam operacionais sem internet.
-
-Fontes: [MCA 1002](https://backend.intelbras.com/pt-br/hub-de-automacao-inteligente-mca-1002) · [datasheet MCA 1001](https://backend.intelbras.com/sites/default/files/2023-07/datasheet-mca-1001-pt.pdf) · [guia MCA 1001](https://backend.intelbras.com/sites/default/files/2026-02/Guia_MCA_1001_01-26_site.pdf)
-
-## As duas opções
-
-| Critério | Hub Intelbras MCA + API Intelbras | Home Assistant num Raspberry |
-|---|---|---|
-| Comando de voz em pt-BR | a confirmar: sem a Alexa, falta a fonte de voz | Precisa de integração (voz local ou outra) |
-| Controla o módulo relé com fio | a confirmar: aceita só dispositivos Zigbee compatíveis? | Sim, por MQTT, Modbus ou ESPHome |
-| Torre PX envia comando ao quarto | a confirmar: depende da API de integração | Sim, por API própria |
-| Funciona sem internet | Dispositivos Zigbee: sim, segundo o fabricante. Cenários: a confirmar | Sim, para o controle local |
-| Gestão de vários quartos e unidades | a confirmar: uma conta para todos os hubs? | Um Raspberry por quarto exige gestão de vários equipamentos. Um mini PC central evita isso → [processamento central](#processamento-central-hipótese) |
-| Dependência de fabricante | Alta: dispositivos da linha Intelbras | Baixa |
-| Custo por quarto | Hub: cerca de R$ 224 (preço de tabela, 2026-10) | a confirmar |
-
-## Perguntas para a Intelbras
-
-1. Como a PX tem acesso à API de integração? Há contrato ou custo?
-2. A API é de nuvem ou local?
-3. Uma conta controla os hubs de todos os quartos e de todas as unidades?
-4. A API envia comandos e lê o estado dos dispositivos? Ela envia eventos, por exemplo por webhook?
-5. A API controla fechaduras Intelbras? Se sim, a mesma integração serve para o quarto e para o banheiro.
-6. O que acontece com os comandos da API quando a internet cai?
-7. Um hub serve um quarto ou um grupo de quartos? O limite é 32 dispositivos por hub.
-8. Qual sistema de voz funciona com o MCA sem a Alexa?
-
-## Conflito com as decisões atuais
-
-O MCA usa Zigbee. As decisões atuais usam um módulo relé central com fio e interruptores de baixa tensão. Há duas saídas:
-
-- Manter o módulo relé com fio e encontrar uma ponte para o MCA. A ponte pode não existir.
-- Trocar o relé central por módulos Zigbee compatíveis com o MCA, um por circuito.
-
-Um requisito anterior também é afetado: trocar dispositivos na manutenção sem depender de uma marca. Com o MCA, o quarto passa a depender da linha Intelbras.
-
-## Escala: 20 quartos
-
-Cada quarto precisa de, no mínimo, 2 dispositivos no hub: a fechadura e o controle da luz.
-
-| Item | Dispositivos |
-|---|---|
-| 20 quartos × 2 dispositivos | 40 |
-| Banheiro comunitário | a definir |
-| Limite por hub MCA | 32 |
-
-Resultado: 1 hub não é suficiente. São necessários, no mínimo, 2 hubs. O alcance do Zigbee entre os quartos também precisa de teste no local.
-
-## Processamento central (hipótese)
-
-Com cerca de 20 quartos, um hub de processamento por quarto fica inviável, principalmente pelo custo. Um processamento central mais robusto, como um mini PC, passa a valer mais a pena. Cada quarto fica só com os dispositivos finais: fechadura, controle da luz, alto-falante e microfone.
-
-Esta é uma hipótese de 2026-10-22. Ela ainda não virou ADR.
-
-O que o mini PC central pode executar (a confirmar):
-
-- A integração com o hub MCA e com a API Intelbras, se a API for local.
-- O processamento de voz do assistente → [assistente.md](assistente.md).
-- A lógica do evento "porta aberta", da luz e do banho.
-
-Perguntas:
-
-1. Qual mini PC e qual custo, comparado com 20 hubs ou 20 Raspberry?
-2. O mini PC é ponto único de falha. O que cada quarto faz quando o mini PC cai? A luz e a fechadura continuam locais?
-3. Onde o mini PC fica instalado, e qual rede liga os 20 quartos a ele?
-4. O mini PC substitui a Torre para o evento "porta aberta", ou só complementa a Torre?
-5. O mini PC precisa de redundância (um segundo equipamento de reserva)?
-
-## Evento "porta aberta"
-
-A luz e o assistente começam quando a porta abre. Há dois caminhos possíveis:
-
-| Caminho | Vantagem | Risco |
-|---|---|---|
-| Cenário local no hub MCA (fechadura → luz) | Funciona sem internet, segundo o fabricante | O assistente não está no hub. Precisa de outro caminho para ele |
-| Fechadura → nuvem Intelbras → Torre → quarto | A Torre sabe quem entrou e quando | Depende da internet e de webhook na API Intelbras (a confirmar) |
-
-## Ligação com o resto do sistema
-
-- O hub envia comandos ao módulo relé → [rele-e-interruptores.md](rele-e-interruptores.md).
-- A escolha do hub decide qual protocolo o módulo relé precisa aceitar.
-- O banheiro também precisa de controle de acesso → [banheiro.md](banheiro.md).
-- O assistente recebe o evento "porta aberta" → [assistente.md](assistente.md).
+1. Qual mini PC e qual coordenador Zigbee?
+2. Quantos dispositivos um coordenador aceita com estabilidade? Medir no teste piloto.
+3. A central precisa de redundância, por exemplo um segundo mini PC de reserva?
+4. Qual contrato liga a central à Torre? O contrato vai para [`../contracts/`](../contracts/).
+5. Quem faz o pareamento dos dispositivos na instalação, e com qual procedimento?

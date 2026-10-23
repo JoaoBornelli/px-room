@@ -2,11 +2,11 @@
 
 Quarto inteligente de descanso para motoristas PX.
 
-O sistema PX pré-reserva o quarto a partir do contrato do motorista. O motorista recebe no app a senha da fechadura e as informações do quarto. No quarto, a luz acende automaticamente e um assistente de voz dá as boas-vindas ao motorista.
+O sistema PX pré-reserva o quarto a partir do contrato do motorista. O motorista recebe no app a senha da fechadura e as informações do quarto. No quarto, a luz acende automaticamente. Na fase 2, um assistente de voz dá as boas-vindas ao motorista.
 
-O quarto tem só o dormitório. O banheiro fica fora do quarto e é comunitário. O banheiro também tem controle de acesso. O motorista tem direito a um banho grátis. Para outro banho, o motorista paga.
+O quarto tem só o dormitório. O banheiro fica fora do quarto e é comunitário. Cada box de chuveiro tem uma fechadura e uma válvula com timer. O motorista tem direito a um banho grátis. Para outro banho, o motorista paga.
 
-Escala inicial: cerca de 20 quartos.
+Escala: o número de quartos aumentou muito em relação aos cerca de 20 quartos iniciais. O valor novo está a confirmar.
 
 ## O quarto
 
@@ -15,6 +15,19 @@ Cada quarto mede cerca de 2 m × 2,5 m e tem uma cama de solteiro e um ar-condic
 ![Maquete do quarto PX: 2 × 2,5 m, cama de solteiro, janela com ar-condicionado e porta com fechadura](hardware/diagramas/planta-quarto.svg)
 
 ## Arquitetura
+
+Cada local tem uma central (mini PC) com Zigbee2MQTT. Os dispositivos dos quartos e do banheiro são Zigbee comerciais, em mesh: relé de parede, sensor de porta, emissor infravermelho e válvula do chuveiro. A fechadura do quarto fica fora da rede e valida a senha offline. O assistente de voz é uma camada separada, por Wi-Fi, na fase 2.
+
+```
+Torre PX (nuvem) ──► Central do local (mini PC: MQTT, Zigbee2MQTT, orquestrador)
+                          │
+                     coordenador Zigbee ── mesh: quartos e banheiro
+Fechadura do quarto: fora da rede, senha offline por algoritmo
+```
+
+A decisão está na [ADR 0001](ADRs/0001-central-zigbee-por-local.md). O detalhe está em [`hardware/hub-automacao.md`](hardware/hub-automacao.md).
+
+> **Nota:** o diagrama abaixo ainda mostra a arquitetura anterior, com o hub Intelbras MCA. O diagrama precisa ser refeito.
 
 ![Visão geral do hardware do quarto PX](hardware/diagramas/visao-geral.svg)
 
@@ -37,31 +50,31 @@ Este fluxo é uma proposta. Os passos marcados "a confirmar" dependem da investi
 sequenceDiagram
     autonumber
     participant T as Sistema PX (Torre)
-    participant I as API Intelbras
-    participant F as Fechadura do quarto
+    participant L as API da fechadura (marca a definir)
     participant A as App do motorista
     actor M as Motorista que sai
-    participant Q as Quarto (luz e assistente)
+    participant F as Fechadura do quarto
+    participant C as Central do local
+    participant Q as Quarto (Zigbee)
 
     Note over T: Contrato prevê troca de motorista
     T->>T: Calcula o horário da troca a partir do contrato e da rota
     T->>T: Pré-reserva o quarto (descanso mínimo de 11 h)
-    T->>I: Pede senha com início e fim
-    I->>F: Grava a senha temporária
+    T->>L: Gera senha offline com início e fim
+    L-->>T: Senha
     T->>A: Envia notificação da reserva
     A->>M: Mostra localização, número do quarto e senha
 
     Note over M,Q: Troca de motorista. Outro motorista assume o caminhão.
 
     M->>F: Digita a senha
-    F->>F: Abre a porta
-    F-->>Q: Evento "porta aberta" (caminho a confirmar)
-    Q->>Q: Acende a luz
-    Note over Q: Alguns segundos depois
-    Q->>M: Assistente dá as boas-vindas
-    Q->>M: Assistente informa banho, contrato e regras
+    F->>F: Valida a senha offline e abre a porta
+    Q->>C: Sensor de porta: evento "porta aberta"
+    C->>Q: Liga o relé da luz
+    C-->>T: Registra a entrada
+    Note over Q: Fase 2: assistente de voz dá as boas-vindas
 
-    Note over M: Banho comunitário: fluxo a definir
+    Note over M: Banho: fechadura do box (a definir) e válvula Zigbee com timer
 ```
 
 ## Fase atual: escolha do hardware
@@ -70,13 +83,13 @@ O hardware define o resto do projeto. A investigação está no painel [`hardwar
 
 | Peça | Situação |
 |---|---|
-| Hub de automação | Em avaliação: hub Intelbras MCA, controlado pela API de integração da Intelbras. A Alexa não é mais uma opção. |
-| Processamento | Hipótese: um mini PC central em vez de um hub de processamento por quarto. Veja [`hardware/hub-automacao.md`](hardware/hub-automacao.md#processamento-central-hipótese). |
-| Fechadura do quarto | Obrigatória. A Torre provisiona a senha pela API Intelbras, para a data e o horário da reserva. |
-| Assistente de voz | Desenvolvimento interno, provavelmente. Dá as boas-vindas e informa o motorista. |
-| Banheiro comunitário | Fora do quarto, com controle de acesso. Um banho grátis e banhos extras pagos. Fluxo a definir. |
-| Luz | 1 ponto de luz e 1 interruptor por quarto. A luz acende quando o motorista entra. |
-| Ar-condicionado | 1 por quarto, sobre a janela. Controle pelo hub: a definir. |
+| Central de automação | Decidida a direção: mini PC por local, Zigbee2MQTT e dispositivos Zigbee em mesh. Produtos a escolher. Veja a [ADR 0001](ADRs/0001-central-zigbee-por-local.md). |
+| Fechadura do quarto | Obrigatória. Senha com início e fim, validada offline por algoritmo. Marca a escolher. Veja [`hardware/fechadura.md`](hardware/fechadura.md). |
+| Luz | 1 ponto de luz e 1 interruptor por quarto. Relé Zigbee na caixa da parede. A luz acende quando o sensor de porta avisa a central. |
+| Ar-condicionado | 1 por quarto, sobre a janela. Emissor infravermelho Zigbee. |
+| Detector de fumaça | Obrigatório, 1 por quarto e 1 no banheiro. Alarme local, sem depender de rede. Veja [`hardware/detector-fumaca.md`](hardware/detector-fumaca.md). |
+| Banheiro comunitário | 3 boxes de vaso e 4 boxes de chuveiro. Fechadura por box de chuveiro (a definir) e válvula Zigbee com timer. Um banho grátis e banhos extras pagos. Veja [`hardware/banheiro.md`](hardware/banheiro.md). |
+| Assistente de voz | Fase 2. Satélite ESP32-S3 por Wi-Fi, com STT e TTS na central. Veja [`hardware/assistente.md`](hardware/assistente.md). |
 | Reserva | O sistema PX pré-reserva o quarto a partir do contrato do motorista. Proposta complementar: plataforma interna com login pelo Keycloak. Veja [`docs/reserva.md`](docs/reserva.md). |
 
 ## Futuro
@@ -88,8 +101,8 @@ O hardware define o resto do projeto. A investigação está no painel [`hardwar
 | Pasta | Conteúdo |
 |---|---|
 | [`hardware/`](hardware/README.md) | Painel vivo do hardware, um documento por subsistema e os diagramas |
-| [`ADRs/`](ADRs/) | Decisões de arquitetura fechadas (vazia por enquanto) |
-| [`contracts/`](contracts/) | Contratos entre sistemas, por exemplo Torre ↔ API Intelbras (vazia por enquanto) |
+| [`ADRs/`](ADRs/) | Decisões de arquitetura fechadas |
+| [`contracts/`](contracts/) | Contratos entre sistemas, por exemplo Torre ↔ central do local e Torre ↔ API da fechadura (vazia por enquanto) |
 | [`docs/`](docs/) | Documentação geral do projeto, por exemplo a [reserva](docs/reserva.md) |
 
 ## Como contribuir com a documentação
