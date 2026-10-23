@@ -13,9 +13,9 @@ Central do local (mini PC)
    ├─ broker MQTT
    ├─ Zigbee2MQTT ◄── coordenador Zigbee de rede (Ethernet ou PoE)
    │                     └─ mesh Zigbee
-   │                          ├─ quarto: relé de parede, sensor de porta, emissor IR
-   │                          └─ banheiro: válvula de cada chuveiro
-   └─ orquestrador: regras do local (porta aberta → luz, timer do banho)
+   │                          ├─ quarto: relé de parede, detector de fumaça
+   │                          └─ banheiro: válvula de cada chuveiro, detector de fumaça
+   └─ orquestrador: regras do local (comando da luz, alarme de fumaça, timer do banho)
 
 Fechadura do quarto: fora da rede Zigbee (senha offline por algoritmo) → fechadura.md
 Assistente de voz: camada separada por Wi-Fi, fase 2 → assistente.md
@@ -36,10 +36,9 @@ Assistente de voz: camada separada por Wi-Fi, fase 2 → assistente.md
 | Dispositivo | Função | Papel na mesh |
 |---|---|---|
 | Relé de parede com entrada de interruptor | Liga a luz. O interruptor aciona o relé sem a central | Roteador (ligado à rede elétrica) |
-| Sensor de porta | Envia o evento "porta aberta" | Dispositivo final (bateria) |
-| Emissor infravermelho | Controla o ar-condicionado | Roteador ou dispositivo final, conforme o produto |
+| Detector de fumaça | Envia o sinal de alarme à central (protocolo a confirmar) | a confirmar |
 
-O detector de fumaça ainda não tem integração definida → [detector-fumaca.md](detector-fumaca.md).
+O quarto não tem sensor de porta nem emissor infravermelho por enquanto. A luz acende pelo interruptor e pelo comando da central ao relé. O protocolo do detector de fumaça está a confirmar → [detector-fumaca.md](detector-fumaca.md).
 
 ## Escala
 
@@ -65,7 +64,8 @@ Saída com fio, se o teste piloto falhar: relés no quadro elétrico. Por isso, 
 |---|---|
 | Luz pelo interruptor | Funciona: o relé aciona a luz localmente |
 | Fechadura do quarto | Funciona: a senha é validada na fechadura |
-| Luz que acende quando a porta abre | Para |
+| Comando da central que liga a luz | Para |
+| Sinal do detector de fumaça à central | Para. O alarme sonoro local continua |
 | Timer do chuveiro | Depende de o timer rodar no próprio dispositivo → [banheiro.md](banheiro.md) |
 | Eventos para a Torre | Param. A central precisa guardar e reenviar os eventos quando voltar (a definir) |
 

@@ -53,5 +53,5 @@ Nada aqui está confirmado. Preencha a tabela com a fonte de cada resposta.
 ## Ligação com o resto do sistema
 
 - A Torre PX pré-reserva o quarto e chama a API da marca. O contrato desta chamada vai para [`../contracts/`](../contracts/) quando a marca for escolhida.
-- O evento "porta aberta" vem do sensor de porta Zigbee, e não da fechadura → [hub-automacao.md](hub-automacao.md).
+- O quarto não tem sensor de porta. A fechadura fica fora da rede, e a central não recebe o evento de abertura → [hub-automacao.md](hub-automacao.md).
 - A fechadura do box de chuveiro ainda não está definida → [banheiro.md](banheiro.md).

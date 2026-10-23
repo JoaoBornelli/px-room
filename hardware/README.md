@@ -8,7 +8,7 @@
 1. O sistema PX calcula o horário da troca de motorista a partir do contrato. O sistema PX pré-reserva o quarto com data e horário. O contexto está no [README principal](../README.md#contexto-da-operação).
 2. A Torre gera, pela API da marca da fechadura, uma senha offline válida só na data e no horário da reserva.
 3. O motorista recebe uma notificação. O app mostra a localização, o número do quarto e a senha.
-4. O motorista entra no quarto com a senha. O sensor de porta avisa a central do local, e a central acende a luz.
+4. O motorista entra no quarto com a senha. A luz acende pelo interruptor ou pelo comando da central ao relé Zigbee. O gatilho do comando está a definir.
 5. Na fase 2, o assistente de voz dá as boas-vindas e informa o banho, o contrato e as regras.
 6. O motorista usa o banheiro comunitário, fora do quarto. Uma fechadura em cada box de chuveiro controla o acesso, e uma válvula Zigbee com timer libera a água. O primeiro banho é grátis. Para outro banho, o motorista paga.
 
@@ -36,8 +36,6 @@ Cada quarto mede cerca de 2 m × 2,5 m. A janela fica numa parede de 2 m, e a po
 | Tomada | 1 |
 | Detector de fumaça (no teto) | 1 |
 | Relé Zigbee de parede | 1 |
-| Sensor de porta Zigbee | 1 |
-| Emissor infravermelho Zigbee (ar-condicionado) | 1 |
 
 Escala: o número de quartos aumentou muito em relação aos cerca de 20 quartos iniciais. O valor novo está a confirmar.
 

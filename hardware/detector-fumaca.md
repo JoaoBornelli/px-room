@@ -13,7 +13,7 @@ Cada quarto precisa de um detector de fumaça. O motorista dorme no quarto, e o 
 | Alarme sonoro no próprio quarto | Sim | O alarme acorda o motorista sem depender de rede. |
 | Funciona sem internet e sem a central | Sim | O alarme não pode depender da rede. |
 | Alerta de bateria baixa | Sim | A equipe troca a bateria antes de o detector parar. |
-| Aviso à central e à equipe da PX | Desejável | A equipe sabe qual quarto disparou. |
+| Aviso à central e à equipe da PX | Sim | A central recebe o sinal do alarme. A equipe sabe qual quarto disparou. O protocolo está a confirmar. |
 | Atende às exigências do Corpo de Bombeiros para o local | a confirmar | Veja a pergunta 1. |
 
 ## Perguntas

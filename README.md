@@ -22,7 +22,7 @@ O banheiro mede cerca de 6 m × 2,4 m e tem 4 boxes de chuveiro e 3 boxes de vas
 
 ## Arquitetura
 
-Cada local tem uma central (mini PC) com Zigbee2MQTT. Os dispositivos dos quartos e do banheiro são Zigbee comerciais, em mesh: relé de parede, sensor de porta, emissor infravermelho e válvula do chuveiro. A fechadura do quarto fica fora da rede e valida a senha offline. O assistente de voz é uma camada separada, por Wi-Fi, na fase 2.
+Cada local tem uma central (mini PC) com Zigbee2MQTT. Os dispositivos dos quartos e do banheiro são Zigbee comerciais, em mesh: relé de parede, detector de fumaça e válvula do chuveiro. A fechadura do quarto fica fora da rede e valida a senha offline. O assistente de voz é uma camada separada, por Wi-Fi, na fase 2.
 
 ```
 Torre PX (nuvem) ──► Central do local (mini PC: MQTT, Zigbee2MQTT, orquestrador)
@@ -73,9 +73,8 @@ sequenceDiagram
 
     M->>F: Digita a senha
     F->>F: Valida a senha offline e abre a porta
-    Q->>C: Sensor de porta: evento "porta aberta"
-    C->>Q: Liga o relé da luz
-    C-->>T: Registra a entrada
+    C->>Q: Comando liga o relé da luz (gatilho a definir)
+    Note over Q: Sem sensor de porta. O interruptor também liga a luz.
     Note over Q: Fase 2: assistente de voz dá as boas-vindas
 
     Note over M: Banho: fechadura do box (a definir) e válvula Zigbee com timer
@@ -89,9 +88,9 @@ O hardware define o resto do projeto. A investigação está no painel [`hardwar
 |---|---|
 | Central de automação | Decidida a direção: mini PC por local, Zigbee2MQTT e dispositivos Zigbee em mesh. Produtos a escolher. Veja a [ADR 0001](ADRs/0001-central-zigbee-por-local.md). |
 | Fechadura do quarto | Obrigatória. Senha com início e fim, validada offline por algoritmo. Marca a escolher. Veja [`hardware/fechadura.md`](hardware/fechadura.md). |
-| Luz | 1 ponto de luz e 1 interruptor por quarto. Relé Zigbee na caixa da parede. A luz acende quando o sensor de porta avisa a central. |
-| Ar-condicionado | 1 por quarto, sobre a janela. Emissor infravermelho Zigbee. |
-| Detector de fumaça | Obrigatório, 1 por quarto e 1 no banheiro. Alarme local, sem depender de rede. Veja [`hardware/detector-fumaca.md`](hardware/detector-fumaca.md). |
+| Luz | 1 ponto de luz e 1 interruptor por quarto. Relé Zigbee na caixa da parede. A luz acende pelo interruptor e pelo comando da central ao relé. O gatilho do comando está a definir. |
+| Ar-condicionado | 1 por quarto, sobre a janela. Por enquanto, o motorista usa o controle do aparelho. |
+| Detector de fumaça | Obrigatório, 1 por quarto e 1 no banheiro. Alarme local, sem depender de rede. A central recebe o sinal do alarme. Veja [`hardware/detector-fumaca.md`](hardware/detector-fumaca.md). |
 | Banheiro comunitário | 3 boxes de vaso e 4 boxes de chuveiro. Fechadura por box de chuveiro (a definir) e válvula Zigbee com timer. Um banho grátis e banhos extras pagos. Veja [`hardware/banheiro.md`](hardware/banheiro.md). |
 | Assistente de voz | Fase 2. Satélite ESP32-S3 por Wi-Fi, com STT e TTS na central. Veja [`hardware/assistente.md`](hardware/assistente.md). |
 | Reserva | O sistema PX pré-reserva o quarto a partir do contrato do motorista. Proposta complementar: plataforma interna com login pelo Keycloak. Veja [`docs/reserva.md`](docs/reserva.md). |

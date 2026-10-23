@@ -18,7 +18,7 @@ Um satélite de voz por quarto, separado da parte elétrica → [ADR 0001](../AD
 - A wake word roda no satélite (microWakeWord). O áudio só sai do quarto depois da wake word.
 - A central do local faz o STT (faster_whisper) e o TTS (Kokoro).
 - As falas fixas, como as boas-vindas, ficam em cache na central.
-- O evento "porta aberta" do sensor Zigbee inicia as boas-vindas. Esta fala não precisa de wake word.
+- O gatilho das boas-vindas está a definir, porque o quarto não tem sensor de porta. Esta fala não precisa de wake word.
 
 | Candidato | Rede | O que tem | Preço |
 |---|---|---|---|
@@ -37,5 +37,5 @@ Um satélite de voz por quarto, separado da parte elétrica → [ADR 0001](../AD
 
 ## Ligação com o resto do sistema
 
-- O evento "porta aberta" chega pela central → [hub-automacao.md](hub-automacao.md).
+- O gatilho das boas-vindas vem da central → [hub-automacao.md](hub-automacao.md).
 - As informações do banho vêm do controle do banheiro → [banheiro.md](banheiro.md).
